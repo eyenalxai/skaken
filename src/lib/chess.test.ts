@@ -184,4 +184,102 @@ describe("parseFen", () => {
 			expect(result.castling).toEqual(expected)
 		}
 	})
+
+	test("should validate move clock numbers", () => {
+		// Valid move clocks
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 50 1")
+		).not.toThrow()
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 999")
+		).not.toThrow()
+
+		// Invalid move clocks
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - -1 1")
+		).toThrow()
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0")
+		).toThrow()
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0.5 1")
+		).toThrow()
+	})
+
+	test("should parse complex board positions correctly", () => {
+		// Position with multiple empty squares and mixed pieces
+		const complexFen =
+			"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+		const result = parseFen(complexFen)
+
+		// Black pieces on top ranks (index 0)
+		expect(result.board[0][0]).toBe("br")
+		expect(result.board[0][4]).toBe("bk")
+		expect(result.board[0][7]).toBe("br")
+		expect(result.board[1][0]).toBe("bp")
+		expect(result.board[1][2]).toBe("bp")
+		expect(result.board[1][6]).toBe("bb")
+		expect(result.board[2][0]).toBe("bb")
+		expect(result.board[2][1]).toBe("bn")
+
+		// Check some empty squares
+		expect(result.board[0][1]).toBeNull()
+		expect(result.board[0][2]).toBeNull()
+
+		// Check some white pieces on bottom ranks (index 7)
+		expect(result.board[7][0]).toBe("wr")
+		expect(result.board[7][4]).toBe("wk")
+		expect(result.board[7][7]).toBe("wr")
+	})
+
+	test("should handle edge cases in piece placement", () => {
+		// All empty squares
+		expect(() => parseFen("8/8/8/8/8/8/8/8 w - - 0 1")).not.toThrow()
+
+		// All white pieces
+		expect(() =>
+			parseFen("RNBQKBNR/PPPPPPPP/8/8/8/8/8/8 w - - 0 1")
+		).not.toThrow()
+
+		// All black pieces
+		expect(() =>
+			parseFen("8/8/8/8/8/8/pppppppp/rnbqkbnr b - - 0 1")
+		).not.toThrow()
+
+		// Maximum consecutive empty squares
+		expect(() => parseFen("8/8/8/8/3P4/8/8/8 w - - 0 1")).not.toThrow()
+	})
+
+	test("should reject invalid piece arrangements", () => {
+		const invalidPositions = [
+			// Too many squares in a rank (9 pieces)
+			"rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+			// Too few squares in a rank (7 pieces)
+			"rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+			// Invalid piece character
+			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBXR w KQkq - 0 1"
+		]
+
+		for (const fen of invalidPositions) {
+			expect(() => parseFen(fen)).toThrow()
+		}
+	})
+
+	test("should validate en passant target squares", () => {
+		// Valid en passant squares
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
+		).not.toThrow()
+		expect(() =>
+			parseFen("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2")
+		).not.toThrow()
+
+		// Invalid en passant squares
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e4 0 1")
+		).toThrow()
+		expect(() =>
+			parseFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e5 0 1")
+		).toThrow()
+	})
 })
