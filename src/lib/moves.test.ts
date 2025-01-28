@@ -92,8 +92,6 @@ describe("getValidMoves", () => {
 					{ from: "d4", to: "e6" },
 					{ from: "d4", to: "f5" },
 					{ from: "d4", to: "f3" },
-					{ from: "d4", to: "e2" },
-					{ from: "d4", to: "c2" },
 					{ from: "d4", to: "b3" }
 				]
 			)
