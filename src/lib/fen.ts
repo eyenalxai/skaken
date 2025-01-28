@@ -26,6 +26,7 @@ const isPiece = (char: string) => {
 	const validPieces = ["p", "n", "b", "r", "q", "k"]
 	const color = char === char.toUpperCase() ? "w" : "b"
 	const pieceType = char.toLowerCase() as PieceType
+
 	return (
 		validPieces.includes(pieceType) &&
 		((color === "w" && char === char.toUpperCase()) ||
@@ -36,6 +37,7 @@ const isPiece = (char: string) => {
 const isSquare = (square: string) => {
 	if (square.length !== 2) return false
 	const [file, rank] = square.split("")
+
 	return (
 		["a", "b", "c", "d", "e", "f", "g", "h"].includes(file) &&
 		["1", "2", "3", "4", "5", "6", "7", "8"].includes(rank)
@@ -46,8 +48,10 @@ const charToPiece = (char: string) => {
 	if (!isPiece(char)) {
 		throw new Error(`Invalid piece character: ${char}`)
 	}
+
 	const color: Color = char === char.toUpperCase() ? "w" : "b"
 	const pieceType: PieceType = char.toLowerCase() as PieceType
+
 	return `${color}${pieceType}` as Piece
 }
 
@@ -58,6 +62,7 @@ const isValidEnPassantSquare = (square: Square) => {
 
 const isValidCastlingString = (castling: string) => {
 	if (castling === "-") return true
+
 	return (
 		[...castling].every((char) => "KQkq".includes(char)) &&
 		new Set(castling).size === castling.length
@@ -66,6 +71,7 @@ const isValidCastlingString = (castling: string) => {
 
 export const parseFen = (fen: string) => {
 	const parts = fen.split(" ")
+
 	if (parts.length !== 6) {
 		throw new Error("Invalid FEN: must contain 6 parts")
 	}
