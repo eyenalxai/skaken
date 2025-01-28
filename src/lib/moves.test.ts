@@ -160,7 +160,7 @@ describe("getValidMoves", () => {
 	describe("kings", () => {
 		it("should generate basic king moves", () => {
 			expectMoves(
-				"rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+				"rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
 				"e1",
 				[{ from: "e1", to: "e2" }]
 			)
