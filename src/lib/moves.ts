@@ -302,24 +302,12 @@ const getKingMoves = (state: FenResult, rank: number, file: number) => {
 
 const canCastleKingSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["f1", "g1"] : ["f8", "g8"]
-
-	return (
-		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
-		squares.every(
-			(square) => !isSquareUnderAttack(state, square as Square, color)
-		)
-	)
+	return squares.every((square) => !getPieceAt(state.board, square as Square))
 }
 
 const canCastleQueenSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["d1", "c1", "b1"] : ["d8", "c8", "b8"]
-
-	return (
-		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
-		squares
-			.slice(0, 2)
-			.every((square) => !isSquareUnderAttack(state, square as Square, color))
-	)
+	return squares.every((square) => !getPieceAt(state.board, square as Square))
 }
 
 const isSquareUnderAttack = (
@@ -334,10 +322,32 @@ const isSquareUnderAttack = (
 
 	for (let rank = 0; rank < 8; rank++) {
 		for (let file = 0; file < 8; file++) {
-			const piece = state.board[rank][file]
+			const piece = tempState.board[rank][file]
 			if (!piece || piece[0] === defendingColor) continue
 
-			const moves = getBasicMoves(tempState, coordsToSquare(rank, file))
+			let moves: Move[] = []
+
+			switch (piece[1]) {
+				case "p":
+					moves = getPawnMoves(tempState, rank, file)
+					break
+				case "n":
+					moves = getKnightMoves(tempState, rank, file)
+					break
+				case "b":
+					moves = getBishopMoves(tempState, rank, file)
+					break
+				case "r":
+					moves = getRookMoves(tempState, rank, file)
+					break
+				case "q":
+					moves = getQueenMoves(tempState, rank, file)
+					break
+				case "k":
+					moves = getKingMoves(tempState, rank, file)
+					break
+			}
+
 			if (moves.some((move) => move.to === square)) {
 				return true
 			}
@@ -345,33 +355,6 @@ const isSquareUnderAttack = (
 	}
 
 	return false
-}
-
-const getBasicMoves = (state: FenResult, square: Square) => {
-	const piece = getPieceAt(state.board, square)
-	if (!piece) return []
-
-	const [color, type] = piece
-	if (color !== state.activeColor) return []
-
-	const [rank, file] = squareToCoords(square)
-
-	switch (type) {
-		case "p":
-			return getPawnMoves(state, rank, file)
-		case "n":
-			return getKnightMoves(state, rank, file)
-		case "b":
-			return getBishopMoves(state, rank, file)
-		case "r":
-			return getRookMoves(state, rank, file)
-		case "q":
-			return getQueenMoves(state, rank, file)
-		case "k":
-			return getKingMoves(state, rank, file)
-		default:
-			return []
-	}
 }
 
 const movePutsKingInCheck = (state: FenResult, move: Move) => {
