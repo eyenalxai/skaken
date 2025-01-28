@@ -69,7 +69,7 @@ const isValidCastlingString = (castling: string) => {
 	)
 }
 
-export const parseFen = (fen: string) => {
+export const parseFen = (fen: string, validateKings = true) => {
 	const parts = fen.split(" ")
 
 	if (parts.length !== 6) {
@@ -147,6 +147,11 @@ export const parseFen = (fen: string) => {
 
 	if (halfmoveClock < 0 || fullmoveNumber < 1) {
 		throw new Error("Invalid FEN: move numbers must be non-negative")
+	}
+
+	// Validate that the numbers are integers
+	if (halfmove.includes(".") || fullmove.includes(".")) {
+		throw new Error("Invalid FEN: move numbers must be integers")
 	}
 
 	return {
