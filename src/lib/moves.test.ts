@@ -116,17 +116,13 @@ describe("getValidMoves", () => {
 
 	describe("rooks", () => {
 		it("should generate rook moves", () => {
-			expectMoves(
-				"rnbqkbnr/1ppppppp/p7/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-				"a1",
-				[
-					{ from: "a1", to: "a2" },
-					{ from: "a1", to: "a3" },
-					{ from: "a1", to: "a4" },
-					{ from: "a1", to: "a5" },
-					{ from: "a1", to: "a6" }
-				]
-			)
+			expectMoves("rnbqkbnr/1ppppppp/p7/8/8/8/8/RNBQKBNR w KQkq - 0 1", "a1", [
+				{ from: "a1", to: "a2" },
+				{ from: "a1", to: "a3" },
+				{ from: "a1", to: "a4" },
+				{ from: "a1", to: "a5" },
+				{ from: "a1", to: "a6" }
+			])
 		})
 	})
 
