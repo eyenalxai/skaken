@@ -119,24 +119,7 @@ const getPawnMoves = (
 		const targetSquare = coordsToSquare(rank + direction, captureFile)
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
-		if (targetPiece && targetPiece[0] !== color) {
-			if (rank + direction === promotionRank) {
-				for (const piece of ["q", "r", "b", "n"] as const) {
-					moves.push({
-						from: coordsToSquare(rank, file),
-						to: targetSquare,
-						promotion: piece
-					})
-				}
-			} else {
-				moves.push({
-					from: coordsToSquare(rank, file),
-					to: targetSquare
-				})
-			}
-		}
-
-		if (state.enPassantTarget === targetSquare) {
+		if (targetSquare === state.enPassantTarget) {
 			const correctRank = color === "w" ? 3 : 4
 			const capturedPawnRank = color === "w" ? 3 : 4
 
@@ -152,6 +135,25 @@ const getPawnMoves = (
 						to: targetSquare
 					})
 				}
+			}
+		} else if (!targetPiece || targetPiece[0] === color) {
+			continue
+		}
+
+		if (targetPiece && targetPiece[0] !== color) {
+			if (rank + direction === promotionRank) {
+				for (const piece of ["q", "r", "b", "n"] as const) {
+					moves.push({
+						from: coordsToSquare(rank, file),
+						to: targetSquare,
+						promotion: piece
+					})
+				}
+			} else {
+				moves.push({
+					from: coordsToSquare(rank, file),
+					to: targetSquare
+				})
 			}
 		}
 	}
@@ -350,6 +352,11 @@ const getKingMoves = (
 const canCastleKingSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["f1", "g1"] : ["f8", "g8"]
 	const kingSquare = color === "w" ? "e1" : "e8"
+	const rookSquare = color === "w" ? "h1" : "h8"
+
+	if (!getPieceAt(state.board, rookSquare as Square)?.startsWith(`${color}r`)) {
+		return false
+	}
 
 	return (
 		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
@@ -364,6 +371,11 @@ const canCastleQueenSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["d1", "c1", "b1"] : ["d8", "c8", "b8"]
 	const kingSquare = color === "w" ? "e1" : "e8"
 	const checkSquares = color === "w" ? ["d1", "c1"] : ["d8", "c8"]
+	const rookSquare = color === "w" ? "a1" : "a8"
+
+	if (!getPieceAt(state.board, rookSquare as Square)?.startsWith(`${color}r`)) {
+		return false
+	}
 
 	return (
 		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
@@ -470,10 +482,6 @@ const movePutsKingInCheck = (state: FenResult, move: Move) => {
 
 	if (!kingSquare) return true
 
-	const newState: FenResult = {
-		...state,
-		board: newBoard
-	}
-
+	const newState: FenResult = { ...state, board: newBoard }
 	return isSquareUnderAttack(newState, kingSquare, state.activeColor)
 }
