@@ -412,7 +412,7 @@ const isSquareUnderAttack = (
 	return false
 }
 
-const getRawMovesForPiece = (
+export const getRawMovesForPiece = (
 	state: GameState,
 	rank: number,
 	file: number,

@@ -10,6 +10,7 @@ import {
 import {
 	type Move,
 	getPieceAt,
+	getRawMovesForPiece,
 	getValidMoves,
 	squareToCoords
 } from "@/lib/moves"
@@ -79,8 +80,13 @@ export class ChessGame {
 					const piece = getPieceAt(tempState.board, square)
 					if (!piece || piece[0] === activeColor) continue
 
-					const moves = getValidMoves(tempState, square)
-					if (moves.some((m) => m.to === kingSquare)) {
+					const moves = getRawMovesForPiece(
+						tempState,
+						rank,
+						file,
+						piece[0] as Color
+					)
+					if (moves.some((m: Move) => m.to === kingSquare)) {
 						isInCheck = true
 						break
 					}
