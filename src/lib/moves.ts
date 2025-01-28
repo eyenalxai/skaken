@@ -50,33 +50,38 @@ export const getValidMoves = (state: FenResult, square: Square) => {
 
 	switch (type) {
 		case "p":
-			moves.push(...getPawnMoves(state, rank, file))
+			moves.push(...getPawnMoves(state, rank, file, color))
 			break
 		case "n":
-			moves.push(...getKnightMoves(state, rank, file))
+			moves.push(...getKnightMoves(state, rank, file, color))
 			break
 		case "b":
-			moves.push(...getBishopMoves(state, rank, file))
+			moves.push(...getBishopMoves(state, rank, file, color))
 			break
 		case "r":
-			moves.push(...getRookMoves(state, rank, file))
+			moves.push(...getRookMoves(state, rank, file, color))
 			break
 		case "q":
-			moves.push(...getQueenMoves(state, rank, file))
+			moves.push(...getQueenMoves(state, rank, file, color))
 			break
 		case "k":
-			moves.push(...getKingMoves(state, rank, file))
+			moves.push(...getKingMoves(state, rank, file, color))
 			break
 	}
 
 	return moves.filter((move) => !movePutsKingInCheck(state, move))
 }
 
-const getPawnMoves = (state: FenResult, rank: number, file: number) => {
+const getPawnMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) => {
 	const moves: Move[] = []
-	const direction = state.activeColor === "w" ? -1 : 1
-	const startRank = state.activeColor === "w" ? 6 : 1
-	const promotionRank = state.activeColor === "w" ? 0 : 7
+	const direction = color === "w" ? -1 : 1
+	const startRank = color === "w" ? 6 : 1
+	const promotionRank = color === "w" ? 0 : 7
 
 	if (
 		isInBounds(rank + direction, file) &&
@@ -114,7 +119,7 @@ const getPawnMoves = (state: FenResult, rank: number, file: number) => {
 		const targetSquare = coordsToSquare(rank + direction, captureFile)
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
-		if (targetPiece && targetPiece[0] !== state.activeColor) {
+		if (targetPiece && targetPiece[0] !== color) {
 			if (rank + direction === promotionRank) {
 				for (const piece of ["q", "r", "b", "n"] as const) {
 					moves.push({
@@ -132,16 +137,18 @@ const getPawnMoves = (state: FenResult, rank: number, file: number) => {
 		}
 
 		if (state.enPassantTarget === targetSquare) {
-			const correctRank = state.activeColor === "w" ? 3 : 4
+			const correctRank = color === "w" ? 3 : 4
+
 			if (rank === correctRank) {
 				const capturedPawnRank = rank
 				const capturedPawn = getPieceAt(
 					state.board,
 					coordsToSquare(capturedPawnRank, captureFile)
 				)
+
 				if (
 					capturedPawn &&
-					capturedPawn[0] !== state.activeColor &&
+					capturedPawn[0] !== color &&
 					capturedPawn[1] === "p"
 				) {
 					moves.push({
@@ -167,7 +174,12 @@ const KNIGHT_MOVES: [number, number][] = [
 	[2, 1]
 ]
 
-const getKnightMoves = (state: FenResult, rank: number, file: number) => {
+const getKnightMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) => {
 	const moves: Move[] = []
 
 	for (const [dRank, dFile] of KNIGHT_MOVES) {
@@ -179,7 +191,7 @@ const getKnightMoves = (state: FenResult, rank: number, file: number) => {
 		const targetSquare = coordsToSquare(newRank, newFile)
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
-		if (!targetPiece || targetPiece[0] !== state.activeColor) {
+		if (!targetPiece || targetPiece[0] !== color) {
 			moves.push({
 				from: coordsToSquare(rank, file),
 				to: targetSquare
@@ -194,7 +206,8 @@ const getSlidingMoves = (
 	state: FenResult,
 	rank: number,
 	file: number,
-	directions: [number, number][]
+	directions: [number, number][],
+	color: Color
 ) => {
 	const moves: Move[] = []
 
@@ -212,7 +225,7 @@ const getSlidingMoves = (
 					to: targetSquare
 				})
 			} else {
-				if (targetPiece[0] !== state.activeColor) {
+				if (targetPiece[0] !== color) {
 					moves.push({
 						from: coordsToSquare(rank, file),
 						to: targetSquare
@@ -236,8 +249,12 @@ const BISHOP_DIRECTIONS: [number, number][] = [
 	[1, 1]
 ]
 
-const getBishopMoves = (state: FenResult, rank: number, file: number) =>
-	getSlidingMoves(state, rank, file, BISHOP_DIRECTIONS)
+const getBishopMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) => getSlidingMoves(state, rank, file, BISHOP_DIRECTIONS, color)
 
 const ROOK_DIRECTIONS: [number, number][] = [
 	[-1, 0],
@@ -246,11 +263,26 @@ const ROOK_DIRECTIONS: [number, number][] = [
 	[0, 1]
 ]
 
-const getRookMoves = (state: FenResult, rank: number, file: number) =>
-	getSlidingMoves(state, rank, file, ROOK_DIRECTIONS)
+const getRookMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) => getSlidingMoves(state, rank, file, ROOK_DIRECTIONS, color)
 
-const getQueenMoves = (state: FenResult, rank: number, file: number) =>
-	getSlidingMoves(state, rank, file, [...BISHOP_DIRECTIONS, ...ROOK_DIRECTIONS])
+const getQueenMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) =>
+	getSlidingMoves(
+		state,
+		rank,
+		file,
+		[...BISHOP_DIRECTIONS, ...ROOK_DIRECTIONS],
+		color
+	)
 
 const KING_MOVES: [number, number][] = [
 	[-1, -1],
@@ -263,7 +295,12 @@ const KING_MOVES: [number, number][] = [
 	[1, 1]
 ]
 
-const getKingMoves = (state: FenResult, rank: number, file: number) => {
+const getKingMoves = (
+	state: FenResult,
+	rank: number,
+	file: number,
+	color: Color
+) => {
 	const moves: Move[] = []
 
 	for (const [dRank, dFile] of KING_MOVES) {
@@ -275,7 +312,7 @@ const getKingMoves = (state: FenResult, rank: number, file: number) => {
 		const targetSquare = coordsToSquare(newRank, newFile)
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
-		if (!targetPiece || targetPiece[0] !== state.activeColor) {
+		if (!targetPiece || targetPiece[0] !== color) {
 			moves.push({
 				from: coordsToSquare(rank, file),
 				to: targetSquare
@@ -283,7 +320,7 @@ const getKingMoves = (state: FenResult, rank: number, file: number) => {
 		}
 	}
 
-	if (state.activeColor === "w") {
+	if (color === "w") {
 		if (state.castling.whiteKingSide && canCastleKingSide(state, "w")) {
 			moves.push({
 				from: "e1",
@@ -360,22 +397,22 @@ const isSquareUnderAttack = (
 
 			switch (piece[1]) {
 				case "p":
-					moves = getPawnMoves(tempState, rank, file)
+					moves = getPawnMoves(tempState, rank, file, piece[0] as Color)
 					break
 				case "n":
-					moves = getKnightMoves(tempState, rank, file)
+					moves = getKnightMoves(tempState, rank, file, piece[0] as Color)
 					break
 				case "b":
-					moves = getBishopMoves(tempState, rank, file)
+					moves = getBishopMoves(tempState, rank, file, piece[0] as Color)
 					break
 				case "r":
-					moves = getRookMoves(tempState, rank, file)
+					moves = getRookMoves(tempState, rank, file, piece[0] as Color)
 					break
 				case "q":
-					moves = getQueenMoves(tempState, rank, file)
+					moves = getQueenMoves(tempState, rank, file, piece[0] as Color)
 					break
 				case "k":
-					moves = getKingMoves(tempState, rank, file)
+					moves = getKingMoves(tempState, rank, file, piece[0] as Color)
 					break
 			}
 
