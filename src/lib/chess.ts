@@ -22,7 +22,7 @@ export type FenResult = {
 export const INITIAL_FEN =
 	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-const isPiece = (char: string) => {
+export const isPiece = (char: string) => {
 	const validPieces = ["p", "n", "b", "r", "q", "k"]
 	const color = char === char.toUpperCase() ? "w" : "b"
 	const pieceType = char.toLowerCase() as PieceType
@@ -34,7 +34,7 @@ const isPiece = (char: string) => {
 	)
 }
 
-const isSquare = (square: string) => {
+export const isSquare = (square: string) => {
 	if (square.length !== 2) return false
 	const [file, rank] = square.split("")
 
@@ -44,7 +44,7 @@ const isSquare = (square: string) => {
 	)
 }
 
-const charToPiece = (char: string) => {
+export const charToPiece = (char: string) => {
 	if (!isPiece(char)) {
 		throw new Error(`Invalid piece character: ${char}`)
 	}
