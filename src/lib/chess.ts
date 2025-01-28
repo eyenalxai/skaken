@@ -136,6 +136,7 @@ export const parseFen = (fen: string, validateKings = true) => {
 			throw new Error("Invalid FEN: en passant square must be on rank 3 or 6")
 		}
 	}
+
 	const enPassantTarget = enPassant === "-" ? null : (enPassant as Square)
 
 	const halfmoveClock = Number.parseInt(halfmove)
@@ -149,7 +150,6 @@ export const parseFen = (fen: string, validateKings = true) => {
 		throw new Error("Invalid FEN: move numbers must be non-negative")
 	}
 
-	// Validate that the numbers are integers
 	if (halfmove.includes(".") || fullmove.includes(".")) {
 		throw new Error("Invalid FEN: move numbers must be integers")
 	}
