@@ -42,6 +42,28 @@ function isSquare(square: string): square is Square {
 	)
 }
 
+function charToPiece(char: string): Piece {
+	if (!isPiece(char)) {
+		throw new Error(`Invalid piece character: ${char}`)
+	}
+	const color: Color = char === char.toUpperCase() ? "w" : "b"
+	const pieceType: PieceType = char.toLowerCase() as PieceType
+	return `${color}${pieceType}` as Piece
+}
+
+function isValidEnPassantSquare(square: Square): boolean {
+	const rank = square[1]
+	return rank === "3" || rank === "6"
+}
+
+function isValidCastlingString(castling: string): boolean {
+	if (castling === "-") return true
+	return (
+		[...castling].every((char) => "KQkq".includes(char)) &&
+		new Set(castling).size === castling.length
+	) // No duplicate characters
+}
+
 /**
  * Parses a FEN string into a structured object
  * @param fen - The FEN string to parse (defaults to initial position)
@@ -69,10 +91,7 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 			const char = rank[i]
 			const emptySquares = Number.parseInt(char)
 			if (Number.isNaN(emptySquares)) {
-				if (!isPiece(char)) {
-					throw new Error(`Invalid FEN: invalid piece character '${char}'`)
-				}
-				row.push(char as Piece)
+				row.push(charToPiece(char))
 			} else {
 				for (let j = 0; j < emptySquares; j++) {
 					row.push(null)
@@ -90,7 +109,11 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 		throw new Error('Invalid FEN: active color must be "w" or "b"')
 	}
 
-	// Parse castling rights
+	// Validate castling rights
+	if (!isValidCastlingString(castling)) {
+		throw new Error(`Invalid FEN: invalid castling rights '${castling}'`)
+	}
+
 	const castlingRights = {
 		whiteKingSide: castling.includes("K"),
 		whiteQueenSide: castling.includes("Q"),
@@ -99,8 +122,13 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 	}
 
 	// Parse en passant target
-	if (enPassant !== "-" && !isSquare(enPassant)) {
-		throw new Error(`Invalid FEN: invalid en passant square '${enPassant}'`)
+	if (enPassant !== "-") {
+		if (!isSquare(enPassant)) {
+			throw new Error(`Invalid FEN: invalid en passant square '${enPassant}'`)
+		}
+		if (!isValidEnPassantSquare(enPassant as Square)) {
+			throw new Error("Invalid FEN: en passant square must be on rank 3 or 6")
+		}
 	}
 	const enPassantTarget = enPassant === "-" ? null : (enPassant as Square)
 
