@@ -69,7 +69,7 @@ const isValidCastlingString = (castling: string) => {
 	)
 }
 
-export const parseFen = (fen: string, validateKings = true) => {
+export const parseFen = (fen: string) => {
 	const parts = fen.split(" ")
 
 	if (parts.length !== 6) {
