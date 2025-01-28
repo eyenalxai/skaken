@@ -6,7 +6,7 @@ export type Rank = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8"
 export type Square = `${File}${Rank}`
 
 export type FenResult = {
-	board: (Piece | null)[][] // 8x8 array representing the board, null for empty squares
+	board: (Piece | null)[][]
 	activeColor: Color
 	castling: {
 		whiteKingSide: boolean
@@ -14,15 +14,15 @@ export type FenResult = {
 		blackKingSide: boolean
 		blackQueenSide: boolean
 	}
-	enPassantTarget: Square | null // Square in algebraic notation (e.g., 'e3') or null if no en passant
+	enPassantTarget: Square | null
 	halfmoveClock: number
 	fullmoveNumber: number
 }
 
-const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+export const INITIAL_FEN =
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-// Validation functions
-function isPiece(char: string): char is Piece {
+const isPiece = (char: string) => {
 	const validPieces = ["p", "n", "b", "r", "q", "k"]
 	const color = char === char.toUpperCase() ? "w" : "b"
 	const pieceType = char.toLowerCase() as PieceType
@@ -33,7 +33,7 @@ function isPiece(char: string): char is Piece {
 	)
 }
 
-function isSquare(square: string): square is Square {
+const isSquare = (square: string) => {
 	if (square.length !== 2) return false
 	const [file, rank] = square.split("")
 	return (
@@ -42,7 +42,7 @@ function isSquare(square: string): square is Square {
 	)
 }
 
-function charToPiece(char: string): Piece {
+const charToPiece = (char: string) => {
 	if (!isPiece(char)) {
 		throw new Error(`Invalid piece character: ${char}`)
 	}
@@ -51,26 +51,20 @@ function charToPiece(char: string): Piece {
 	return `${color}${pieceType}` as Piece
 }
 
-function isValidEnPassantSquare(square: Square): boolean {
+const isValidEnPassantSquare = (square: Square) => {
 	const rank = square[1]
 	return rank === "3" || rank === "6"
 }
 
-function isValidCastlingString(castling: string): boolean {
+const isValidCastlingString = (castling: string) => {
 	if (castling === "-") return true
 	return (
 		[...castling].every((char) => "KQkq".includes(char)) &&
 		new Set(castling).size === castling.length
-	) // No duplicate characters
+	)
 }
 
-/**
- * Parses a FEN string into a structured object
- * @param fen - The FEN string to parse (defaults to initial position)
- * @returns Parsed FEN data
- * @throws Error if the FEN string is invalid
- */
-export function parseFen(fen: string = INITIAL_FEN): FenResult {
+export const parseFen = (fen: string) => {
 	const parts = fen.split(" ")
 	if (parts.length !== 6) {
 		throw new Error("Invalid FEN: must contain 6 parts")
@@ -78,15 +72,16 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 
 	const [position, activeColor, castling, enPassant, halfmove, fullmove] = parts
 
-	// Parse board position
 	const board: (Piece | null)[][] = []
 	const ranks = position.split("/")
+
 	if (ranks.length !== 8) {
 		throw new Error("Invalid FEN: board must have 8 ranks")
 	}
 
 	for (const rank of ranks) {
 		const row: (Piece | null)[] = []
+
 		for (let i = 0; i < rank.length; i++) {
 			const char = rank[i]
 			const emptySquares = Number.parseInt(char)
@@ -98,18 +93,18 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 				}
 			}
 		}
+
 		if (row.length !== 8) {
 			throw new Error("Invalid FEN: each rank must have 8 squares")
 		}
+
 		board.push(row)
 	}
 
-	// Validate active color
 	if (activeColor !== "w" && activeColor !== "b") {
 		throw new Error('Invalid FEN: active color must be "w" or "b"')
 	}
 
-	// Validate castling rights
 	if (!isValidCastlingString(castling)) {
 		throw new Error(`Invalid FEN: invalid castling rights '${castling}'`)
 	}
@@ -121,18 +116,17 @@ export function parseFen(fen: string = INITIAL_FEN): FenResult {
 		blackQueenSide: castling.includes("q")
 	}
 
-	// Parse en passant target
 	if (enPassant !== "-") {
 		if (!isSquare(enPassant)) {
 			throw new Error(`Invalid FEN: invalid en passant square '${enPassant}'`)
 		}
+
 		if (!isValidEnPassantSquare(enPassant as Square)) {
 			throw new Error("Invalid FEN: en passant square must be on rank 3 or 6")
 		}
 	}
 	const enPassantTarget = enPassant === "-" ? null : (enPassant as Square)
 
-	// Parse move numbers
 	const halfmoveClock = Number.parseInt(halfmove)
 	const fullmoveNumber = Number.parseInt(fullmove)
 
