@@ -143,10 +143,11 @@ describe("getValidMoves", () => {
 					{ from: "d4", to: "d7" },
 					// Diagonal moves
 					{ from: "d4", to: "c3" },
-					{ from: "d4", to: "b2" },
 					{ from: "d4", to: "e5" },
 					{ from: "d4", to: "c5" },
 					{ from: "d4", to: "e3" },
+					{ from: "d4", to: "b6" },
+					{ from: "d4", to: "a7" },
 					// Horizontal moves
 					{ from: "d4", to: "c4" },
 					{ from: "d4", to: "b4" },
