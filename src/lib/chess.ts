@@ -163,3 +163,39 @@ export const parseFen = (fen: string) => {
 		fullmoveNumber
 	}
 }
+
+export const toFen = (state: FenResult): string => {
+	const position = state.board
+		.map((rank) =>
+			rank.reduce((acc, piece) => {
+				if (piece === null) {
+					const lastChar = acc[acc.length - 1]
+					if (lastChar && !Number.isNaN(Number.parseInt(lastChar))) {
+						return `${acc.slice(0, -1)}${Number.parseInt(lastChar) + 1}`
+					}
+					return `${acc}1`
+				}
+
+				const [color, type] = piece
+				
+				return `${acc}${color === "w" ? type.toUpperCase() : type}`
+			}, "")
+		)
+		.join("/")
+
+	const castling =
+		`${state.castling.whiteKingSide ? "K" : ""}${
+			state.castling.whiteQueenSide ? "Q" : ""
+		}${state.castling.blackKingSide ? "k" : ""}${
+			state.castling.blackQueenSide ? "q" : ""
+		}` || "-"
+
+	return [
+		position,
+		state.activeColor,
+		castling,
+		state.enPassantTarget || "-",
+		state.halfmoveClock,
+		state.fullmoveNumber
+	].join(" ")
+}
