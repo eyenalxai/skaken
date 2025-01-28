@@ -147,6 +147,11 @@ export class ChessGame {
 				this.state.board[0][0] = null
 				this.state.board[0][3] = "br"
 			}
+		} else if (movingPiece[1] === "r") {
+			if (move.from === "a1") this.state.castling.whiteQueenSide = false
+			if (move.from === "h1") this.state.castling.whiteKingSide = false
+			if (move.from === "a8") this.state.castling.blackQueenSide = false
+			if (move.from === "h8") this.state.castling.blackKingSide = false
 		}
 
 		// Update castling rights
@@ -188,6 +193,26 @@ export class ChessGame {
 		this.state.activeColor = (
 			this.state.activeColor === "w" ? "b" : "w"
 		) as Color
+
+		// Add this section to handle captured rooks
+		const capturedPiece = getPieceAt(this.state.board, move.to)
+
+		if (capturedPiece?.[1] === "r") {
+			switch (move.to) {
+				case "a1":
+					this.state.castling.whiteQueenSide = false
+					break
+				case "h1":
+					this.state.castling.whiteKingSide = false
+					break
+				case "a8":
+					this.state.castling.blackQueenSide = false
+					break
+				case "h8":
+					this.state.castling.blackKingSide = false
+					break
+			}
+		}
 
 		this.moveHistory.push(move)
 
