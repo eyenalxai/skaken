@@ -5,7 +5,7 @@ export type File = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"
 export type Rank = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8"
 export type Square = `${File}${Rank}`
 
-export type FenResult = {
+export type GameState = {
 	board: (Piece | null)[][]
 	activeColor: Color
 	castling: {
@@ -164,7 +164,7 @@ export const parseFen = (fen: string) => {
 	}
 }
 
-export const toFen = (state: FenResult): string => {
+export const toFen = (state: GameState): string => {
 	const position = state.board
 		.map((rank) =>
 			rank.reduce((acc, piece) => {
@@ -177,7 +177,7 @@ export const toFen = (state: FenResult): string => {
 				}
 
 				const [color, type] = piece
-				
+
 				return `${acc}${color === "w" ? type.toUpperCase() : type}`
 			}, "")
 		)

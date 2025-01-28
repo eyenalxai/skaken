@@ -1,4 +1,4 @@
-import type { FenResult, Piece, Square } from "@/lib/chess"
+import type { GameState, Piece, Square } from "@/lib/chess"
 import { parseFen } from "@/lib/chess"
 import { INITIAL_FEN } from "@/lib/chess"
 import { describe, expect, test } from "vitest"
@@ -139,7 +139,7 @@ describe("parseFen", () => {
 	})
 
 	test("should handle different castling rights combinations", () => {
-		const testCases: Array<[string, FenResult["castling"]]> = [
+		const testCases: Array<[string, GameState["castling"]]> = [
 			[
 				"-",
 				{

@@ -1,4 +1,4 @@
-import type { Color, FenResult, Piece, Square } from "@/lib/chess"
+import type { Color, GameState, Piece, Square } from "@/lib/chess"
 
 export type Move = {
 	from: Square
@@ -33,12 +33,12 @@ export const isInBounds = (rank: number, file: number) => {
 	return rank >= 0 && rank < 8 && file >= 0 && file < 8
 }
 
-export const getPieceAt = (board: FenResult["board"], square: Square) => {
+export const getPieceAt = (board: GameState["board"], square: Square) => {
 	const [rank, file] = squareToCoords(square)
 	return board[rank][file]
 }
 
-export const getValidMoves = (state: FenResult, square: Square) => {
+export const getValidMoves = (state: GameState, square: Square) => {
 	const piece = getPieceAt(state.board, square)
 	if (!piece) return []
 
@@ -73,7 +73,7 @@ export const getValidMoves = (state: FenResult, square: Square) => {
 }
 
 const getPawnMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -169,7 +169,7 @@ const KNIGHT_MOVES: [number, number][] = [
 ]
 
 const getKnightMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -197,7 +197,7 @@ const getKnightMoves = (
 }
 
 const getSlidingMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	directions: [number, number][],
@@ -244,7 +244,7 @@ const BISHOP_DIRECTIONS: [number, number][] = [
 ]
 
 const getBishopMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -258,14 +258,14 @@ const ROOK_DIRECTIONS: [number, number][] = [
 ]
 
 const getRookMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
 ) => getSlidingMoves(state, rank, file, ROOK_DIRECTIONS, color)
 
 const getQueenMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -290,7 +290,7 @@ const KING_MOVES: [number, number][] = [
 ]
 
 const getKingMoves = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -345,7 +345,7 @@ const getKingMoves = (
 	return moves
 }
 
-const canCastleKingSide = (state: FenResult, color: Color) => {
+const canCastleKingSide = (state: GameState, color: Color) => {
 	const squares = color === "w" ? ["f1", "g1"] : ["f8", "g8"]
 	const kingSquare = color === "w" ? "e1" : "e8"
 	const rookSquare = color === "w" ? "h1" : "h8"
@@ -363,7 +363,7 @@ const canCastleKingSide = (state: FenResult, color: Color) => {
 	)
 }
 
-const canCastleQueenSide = (state: FenResult, color: Color) => {
+const canCastleQueenSide = (state: GameState, color: Color) => {
 	const squares = color === "w" ? ["d1", "c1", "b1"] : ["d8", "c8", "b8"]
 	const kingSquare = color === "w" ? "e1" : "e8"
 	const checkSquares = color === "w" ? ["d1", "c1"] : ["d8", "c8"]
@@ -383,11 +383,11 @@ const canCastleQueenSide = (state: FenResult, color: Color) => {
 }
 
 const isSquareUnderAttack = (
-	state: FenResult,
+	state: GameState,
 	square: Square,
 	defendingColor: Color
 ) => {
-	const tempState: FenResult = {
+	const tempState: GameState = {
 		...state,
 		activeColor: defendingColor === "w" ? "b" : "w"
 	}
@@ -413,7 +413,7 @@ const isSquareUnderAttack = (
 }
 
 const getRawMovesForPiece = (
-	state: FenResult,
+	state: GameState,
 	rank: number,
 	file: number,
 	color: Color
@@ -439,7 +439,7 @@ const getRawMovesForPiece = (
 	}
 }
 
-const movePutsKingInCheck = (state: FenResult, move: Move) => {
+const movePutsKingInCheck = (state: GameState, move: Move) => {
 	const newBoard = state.board.map((rank) => [...rank])
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const [toRank, toFile] = squareToCoords(move.to)
@@ -481,7 +481,7 @@ const movePutsKingInCheck = (state: FenResult, move: Move) => {
 
 	if (!kingSquare) return true
 
-	const newState: FenResult = {
+	const newState: GameState = {
 		...state,
 		board: newBoard,
 		activeColor: state.activeColor === "w" ? "b" : "w"

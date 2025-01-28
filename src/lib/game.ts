@@ -1,12 +1,23 @@
-import type { Color, FenResult, Piece, Square } from "./chess"
-import { INITIAL_FEN, parseFen, toFen } from "./chess"
-import type { Move } from "./moves"
-import { getPieceAt, getValidMoves, squareToCoords } from "./moves"
+import {
+	type Color,
+	type GameState,
+	INITIAL_FEN,
+	type Piece,
+	type Square,
+	parseFen,
+	toFen
+} from "@/lib/chess"
+import {
+	type Move,
+	getPieceAt,
+	getValidMoves,
+	squareToCoords
+} from "@/lib/moves"
 
 export type GameStatus = "active" | "check" | "checkmate" | "stalemate" | "draw"
 
 export class ChessGame {
-	private state: FenResult
+	private state: GameState
 	private moveHistory: Move[] = []
 
 	constructor(fen: string = INITIAL_FEN) {
@@ -57,7 +68,7 @@ export class ChessGame {
 
 		// Check if king is in check
 		if (kingSquare) {
-			const tempState: FenResult = {
+			const tempState: GameState = {
 				...this.state,
 				activeColor: (activeColor === "w" ? "b" : "w") as Color
 			}
