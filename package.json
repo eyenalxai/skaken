@@ -6,7 +6,8 @@
 		"dev": "next dev --turbo",
 		"build": "next build",
 		"start": "next start",
-		"lint": "tsc --noEmit && biome lint && next lint"
+		"lint": "tsc --noEmit && biome lint && next lint",
+		"test": "vitest"
 	},
 	"dependencies": {
 		"class-variance-authority": "^0.7.1",
