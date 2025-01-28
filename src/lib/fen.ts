@@ -94,6 +94,11 @@ export const parseFen = (fen: string) => {
 			if (Number.isNaN(emptySquares)) {
 				row.push(charToPiece(char))
 			} else {
+				if (emptySquares < 1 || emptySquares > 8) {
+					throw new Error(
+						`Invalid FEN: number of empty squares must be between 1 and 8, got ${emptySquares}`
+					)
+				}
 				for (let j = 0; j < emptySquares; j++) {
 					row.push(null)
 				}
