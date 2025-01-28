@@ -132,10 +132,24 @@ const getPawnMoves = (state: FenResult, rank: number, file: number) => {
 		}
 
 		if (state.enPassantTarget === targetSquare) {
-			moves.push({
-				from: coordsToSquare(rank, file),
-				to: targetSquare
-			})
+			const correctRank = state.activeColor === "w" ? 3 : 4
+			if (rank === correctRank) {
+				const capturedPawnRank = rank
+				const capturedPawn = getPieceAt(
+					state.board,
+					coordsToSquare(capturedPawnRank, captureFile)
+				)
+				if (
+					capturedPawn &&
+					capturedPawn[0] !== state.activeColor &&
+					capturedPawn[1] === "p"
+				) {
+					moves.push({
+						from: coordsToSquare(rank, file),
+						to: targetSquare
+					})
+				}
+			}
 		}
 	}
 
@@ -302,12 +316,29 @@ const getKingMoves = (state: FenResult, rank: number, file: number) => {
 
 const canCastleKingSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["f1", "g1"] : ["f8", "g8"]
-	return squares.every((square) => !getPieceAt(state.board, square as Square))
+	const kingSquare = color === "w" ? "e1" : "e8"
+
+	return (
+		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
+		!isSquareUnderAttack(state, kingSquare as Square, color) &&
+		!squares.some((square) =>
+			isSquareUnderAttack(state, square as Square, color)
+		)
+	)
 }
 
 const canCastleQueenSide = (state: FenResult, color: Color) => {
 	const squares = color === "w" ? ["d1", "c1", "b1"] : ["d8", "c8", "b8"]
-	return squares.every((square) => !getPieceAt(state.board, square as Square))
+	const kingSquare = color === "w" ? "e1" : "e8"
+	const checkSquares = color === "w" ? ["d1", "c1"] : ["d8", "c8"]
+
+	return (
+		squares.every((square) => !getPieceAt(state.board, square as Square)) &&
+		!isSquareUnderAttack(state, kingSquare as Square, color) &&
+		!checkSquares.some((square) =>
+			isSquareUnderAttack(state, square as Square, color)
+		)
+	)
 }
 
 const isSquareUnderAttack = (
@@ -361,6 +392,17 @@ const movePutsKingInCheck = (state: FenResult, move: Move) => {
 	const newBoard = state.board.map((rank) => [...rank])
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const [toRank, toFile] = squareToCoords(move.to)
+	const movingPiece = newBoard[fromRank][fromFile]
+
+	if (
+		movingPiece &&
+		movingPiece[1] === "p" &&
+		move.to === state.enPassantTarget
+	) {
+		const capturedPawnRank = fromRank
+		const capturedPawnFile = toFile
+		newBoard[capturedPawnRank][capturedPawnFile] = null
+	}
 
 	newBoard[toRank][toFile] = newBoard[fromRank][fromFile]
 	newBoard[fromRank][fromFile] = null
