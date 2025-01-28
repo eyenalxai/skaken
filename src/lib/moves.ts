@@ -487,9 +487,5 @@ const movePutsKingInCheck = (state: FenResult, move: Move) => {
 		activeColor: state.activeColor === "w" ? "b" : "w"
 	}
 
-	return isSquareUnderAttack(
-		newState,
-		kingSquare,
-		state.activeColor === "w" ? "b" : "w"
-	)
+	return isSquareUnderAttack(newState, kingSquare, state.activeColor)
 }

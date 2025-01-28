@@ -202,8 +202,7 @@ describe("getValidMoves", () => {
 			expectMoves("4r3/8/8/8/8/8/5P2/4K3 w - - 0 1", "e1", [
 				{ from: "e1", to: "d1" },
 				{ from: "e1", to: "f1" },
-				{ from: "e1", to: "d2" },
-				{ from: "e1", to: "e2" }
+				{ from: "e1", to: "d2" }
 			])
 		})
 	})
