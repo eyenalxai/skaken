@@ -1,7 +1,9 @@
+import { DndDemo } from "@/components/dnd-demo"
+
 export default function Page() {
 	return (
 		<main>
-			<h1>Hello</h1>
+			<DndDemo />
 		</main>
 	)
 }
