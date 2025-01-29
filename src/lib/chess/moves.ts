@@ -83,8 +83,8 @@ const getPawnMoves = (
 ) => {
 	const moves: Move[] = []
 	const direction = color === "w" ? -1 : 1
-	const startRank = color === "w" ? 6 : 1
-	const promotionRank = color === "w" ? 0 : 7
+	const startRank = color === "w" ? state.boardSize - 2 : 1
+	const promotionRank = color === "w" ? 0 : state.boardSize - 1
 
 	const newRank = rank + direction
 	const forwardSquare = coordsToSquare(newRank, file, state.boardSize)
