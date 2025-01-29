@@ -15,15 +15,21 @@ import {
 	parseFen,
 	toFen
 } from "@/lib/chess/state"
+import type { ChessStrategy } from "@/lib/chess/strategy"
+import { MinimaxStrategy } from "@/lib/chess/strategy"
 
 export type GameStatus = "active" | "check" | "checkmate" | "stalemate" | "draw"
 
 export class ChessGame {
 	private readonly state: GameState
 	private moveHistory: Move[] = []
+	private whiteStrategy: ChessStrategy | null = null
+	private blackStrategy: ChessStrategy | null = null
+	private readonly fallbackStrategy: MinimaxStrategy
 
 	constructor(fen: string = DEFAULT_FEN, boardSize = 8) {
 		this.state = parseFen(fen, boardSize)
+		this.fallbackStrategy = new MinimaxStrategy(1)
 	}
 
 	public getState = () => ({ ...this.state })
@@ -33,6 +39,40 @@ export class ChessGame {
 	public getMoveHistory = () => [...this.moveHistory]
 
 	public getValidMoves = (square: Square) => getValidMoves(this.state, square)
+
+	public setWhiteStrategy(strategy: ChessStrategy | null) {
+		this.whiteStrategy = strategy
+	}
+
+	public setBlackStrategy(strategy: ChessStrategy | null) {
+		this.blackStrategy = strategy
+	}
+
+	public getWhiteStrategy() {
+		return this.whiteStrategy
+	}
+
+	public getBlackStrategy() {
+		return this.blackStrategy
+	}
+
+	public makeStrategyMove(): boolean {
+		const strategy =
+			this.state.activeColor === "w" ? this.whiteStrategy : this.blackStrategy
+		let move: Move | null = null
+
+		if (strategy) {
+			move = strategy.getMove(this)
+		}
+
+		if (!move) {
+			// If no strategy or strategy returned no move, use minimax with depth 1
+			move = this.fallbackStrategy.getMove(this)
+		}
+
+		if (!move) return false // No moves available at all
+		return this.makeMove(move)
+	}
 
 	public getStatus() {
 		const activeColor = this.state.activeColor
