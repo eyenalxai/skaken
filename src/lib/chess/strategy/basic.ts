@@ -26,7 +26,7 @@ export const berserkMove = async (fen: string, signal: AbortSignal) => {
 			signal
 		})
 
-	return await getBestMove({ fen, maxTime: 100, signal })
+	return await getBestMove(fen, 100, signal)
 }
 
 export const pacifistMove = async (fen: string, signal: AbortSignal) => {
@@ -44,7 +44,7 @@ export const pacifistMove = async (fen: string, signal: AbortSignal) => {
 			signal
 		})
 
-	return await getBestMove({ fen, maxTime: 100, signal })
+	return await getBestMove(fen, 100, signal)
 }
 
 export const randomMove = (fen: string) => {
