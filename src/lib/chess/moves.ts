@@ -43,6 +43,22 @@ export const getPieceAt = (
 	return board[rank][file]
 }
 
+export const getAllValidMoves = (state: GameState) => {
+	const moves: Move[] = []
+
+	for (let rank = 0; rank < state.boardSize; rank++) {
+		for (let file = 0; file < state.boardSize; file++) {
+			const piece = state.board[rank][file]
+			if (!piece || piece[0] !== state.activeColor) continue
+
+			const square = coordsToSquare(rank, file, state.boardSize)
+			moves.push(...getValidMoves(state, square))
+		}
+	}
+
+	return moves
+}
+
 export const getValidMoves = (state: GameState, square: Square) => {
 	const piece = getPieceAt(state.board, square, state.boardSize)
 	if (!piece || piece[0] !== state.activeColor) return []
@@ -518,4 +534,99 @@ const movePutsKingInCheck = (state: GameState, move: Move) => {
 		state.activeColor,
 		state.boardSize
 	)
+}
+
+export const getAllCaptureMoves = (state: GameState) => {
+	const moves = getAllValidMoves(state)
+	return moves.filter((move) => {
+		// Check for regular captures
+		const targetPiece = getPieceAt(state.board, move.to, state.boardSize)
+		if (targetPiece && targetPiece[0] !== state.activeColor) return true
+
+		// Check for en passant captures
+		if (move.to === state.enPassantTarget) {
+			const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
+			const piece = state.board[fromRank][fromFile]
+			return piece?.[1] === "p"
+		}
+
+		return false
+	})
+}
+
+export const moveToAlgebraic = (state: GameState, move: Move): string => {
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
+	const piece = state.board[fromRank][fromFile]
+	if (!piece) return ""
+
+	// Handle castling
+	if (piece[1] === "k") {
+		if (move.from === "e1" && move.to === "g1") return "O-O"
+		if (move.from === "e1" && move.to === "c1") return "O-O-O"
+		if (move.from === "e8" && move.to === "g8") return "O-O"
+		if (move.from === "e8" && move.to === "c8") return "O-O-O"
+	}
+
+	let notation = ""
+	const pieceType = piece[1]
+	const isCapture =
+		getPieceAt(state.board, move.to, state.boardSize) !== null ||
+		(pieceType === "p" && move.to === state.enPassantTarget)
+
+	// For pawns, we need to add the file when capturing
+	if (pieceType === "p") {
+		if (isCapture || move.from[0] !== move.to[0]) {
+			notation += move.from[0]
+			notation += "x"
+		}
+	} else {
+		// Add piece letter for non-pawn moves
+		notation += pieceType.toUpperCase()
+
+		// Handle disambiguation
+		const ambiguousMoves = getAllValidMoves(state).filter((m) => {
+			if (m.to !== move.to) return false
+			const [r, f] = squareToCoords(m.from, state.boardSize)
+			const p = state.board[r][f]
+			return p?.[1] === pieceType && m.from !== move.from
+		})
+
+		if (ambiguousMoves.length > 0) {
+			const sameFile = ambiguousMoves.some((m) => {
+				const [, f] = squareToCoords(m.from, state.boardSize)
+				return f === fromFile
+			})
+			const sameRank = ambiguousMoves.some((m) => {
+				const [r] = squareToCoords(m.from, state.boardSize)
+				return r === fromRank
+			})
+
+			// If there are pieces on the same file or same rank, or multiple ambiguous pieces,
+			// we need to be more specific with disambiguation
+			if (sameFile || sameRank || ambiguousMoves.length > 1) {
+				notation += move.from // Add both file and rank for full disambiguation
+			} else {
+				notation += move.from[0] // Add file by default for simple cases
+			}
+		}
+
+		// Add capture notation for non-pawn pieces
+		if (isCapture) {
+			notation += "x"
+		}
+	}
+
+	// Add destination square
+	notation += move.to
+
+	// Handle promotion
+	if (move.promotion) {
+		notation += `=${move.promotion.toUpperCase()}`
+	}
+
+	return notation
+}
+
+export const movesToAlgebraic = (state: GameState, moves: Move[]): string[] => {
+	return moves.map((move) => moveToAlgebraic(state, move))
 }
