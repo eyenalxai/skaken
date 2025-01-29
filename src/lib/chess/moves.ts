@@ -554,6 +554,24 @@ export const getAllCaptureMoves = (state: GameState) => {
 	})
 }
 
+export const getAllNonCaptureMoves = (state: GameState) => {
+	const moves = getAllValidMoves(state)
+	return moves.filter((move) => {
+		// Check for regular captures
+		const targetPiece = getPieceAt(state.board, move.to, state.boardSize)
+		if (targetPiece && targetPiece[0] !== state.activeColor) return false
+
+		// Check for en passant captures
+		if (move.to === state.enPassantTarget) {
+			const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
+			const piece = state.board[fromRank][fromFile]
+			return !(piece?.[1] === "p")
+		}
+
+		return true
+	})
+}
+
 export const moveToAlgebraic = (state: GameState, move: Move): string => {
 	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
 	const piece = state.board[fromRank][fromFile]
