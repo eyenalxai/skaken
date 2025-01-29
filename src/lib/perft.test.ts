@@ -335,4 +335,74 @@ describe("perft", () => {
 			expect(result).toEqual(expected)
 		}
 	})
+
+	it("should calculate correct perft values for Position 6", () => {
+		const position6Fen =
+			"r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"
+		const state = parseFen(position6Fen)
+
+		const results = [
+			{
+				depth: 0,
+				expected: {
+					nodes: 1,
+					captures: 0,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 0,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			},
+			{
+				depth: 1,
+				expected: {
+					nodes: 46,
+					captures: 4,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 1,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			},
+			{
+				depth: 2,
+				expected: {
+					nodes: 2079,
+					captures: 203,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 40,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			},
+			{
+				depth: 3,
+				expected: {
+					nodes: 89890,
+					captures: 9470,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 1783,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			}
+		]
+
+		for (const { depth, expected } of results) {
+			const result = perft(state, depth)
+			expect(result).toEqual(expected)
+		}
+	})
 })
