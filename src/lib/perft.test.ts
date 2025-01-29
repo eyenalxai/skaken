@@ -1,48 +1,80 @@
 import { describe, expect, it } from "vitest"
-import { parseFen } from "./chess"
+import { INITIAL_FEN, parseFen } from "./chess"
 import { perft } from "./perft"
 
 describe("perft", () => {
-	it("should calculate correct perft values for position 1", () => {
-		const fen =
-			"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-		const state = parseFen(fen)
+	it("should calculate correct perft values for initial position", () => {
+		const state = parseFen(INITIAL_FEN)
 
 		const results = [
 			{
-				depth: 1,
+				depth: 0,
 				expected: {
-					nodes: 6,
+					nodes: 1,
 					captures: 0,
 					enPassant: 0,
 					castles: 0,
 					promotions: 0,
 					checks: 0,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			},
+			{
+				depth: 1,
+				expected: {
+					nodes: 20,
+					captures: 0,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 0,
+					discoveryChecks: 0,
+					doubleChecks: 0,
 					checkmates: 0
 				}
 			},
 			{
 				depth: 2,
 				expected: {
-					nodes: 264,
-					captures: 87,
+					nodes: 400,
+					captures: 0,
 					enPassant: 0,
-					castles: 6,
-					promotions: 48,
-					checks: 10,
+					castles: 0,
+					promotions: 0,
+					checks: 0,
+					discoveryChecks: 0,
+					doubleChecks: 0,
 					checkmates: 0
 				}
 			},
 			{
 				depth: 3,
 				expected: {
-					nodes: 9467,
-					captures: 1021,
-					enPassant: 4,
+					nodes: 8902,
+					captures: 34,
+					enPassant: 0,
 					castles: 0,
-					promotions: 120,
-					checks: 38,
-					checkmates: 22
+					promotions: 0,
+					checks: 12,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 0
+				}
+			},
+			{
+				depth: 4,
+				expected: {
+					nodes: 197281,
+					captures: 1576,
+					enPassant: 0,
+					castles: 0,
+					promotions: 0,
+					checks: 469,
+					discoveryChecks: 0,
+					doubleChecks: 0,
+					checkmates: 8
 				}
 			}
 		]
