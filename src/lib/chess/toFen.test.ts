@@ -1,11 +1,11 @@
 import { parseFen, toFen } from "@/lib/chess/state"
-import { INITIAL_FEN } from "@/lib/chess/state"
+import { DEFAULT_FEN } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("toFen", () => {
 	test("should convert initial position correctly", () => {
-		const state = parseFen(INITIAL_FEN)
-		expect(toFen(state)).toBe(INITIAL_FEN)
+		const state = parseFen(DEFAULT_FEN)
+		expect(toFen(state)).toBe(DEFAULT_FEN)
 	})
 
 	test("should convert mid-game position correctly", () => {
@@ -54,7 +54,7 @@ describe("toFen", () => {
 
 	test("should round-trip all test positions", () => {
 		const testPositions = [
-			INITIAL_FEN,
+			DEFAULT_FEN,
 			"rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 5",
 			"8/8/8/8/8/8/8/8 w - - 0 1",
 			"rnbqkbnr/ppp2ppp/8/3p4/3Pp3/8/PPP2PPP/RNBQKBNR w KQkq e3 0 3",

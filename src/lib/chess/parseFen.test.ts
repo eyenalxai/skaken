@@ -1,11 +1,11 @@
 import type { GameState, Piece, Square } from "@/lib/chess/state"
 import { parseFen } from "@/lib/chess/state"
-import { INITIAL_FEN } from "@/lib/chess/state"
+import { DEFAULT_FEN } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("parseFen", () => {
 	test("should parse initial position correctly", () => {
-		const result = parseFen(INITIAL_FEN)
+		const result = parseFen(DEFAULT_FEN)
 
 		// Check board structure
 		expect(result.board.length).toBe(8)

@@ -7,8 +7,8 @@ import {
 } from "@/lib/chess/moves"
 import {
 	type Color,
+	DEFAULT_FEN,
 	type GameState,
-	INITIAL_FEN,
 	type Piece,
 	type Square,
 	parseFen,
@@ -21,7 +21,7 @@ export class ChessGame {
 	private readonly state: GameState
 	private moveHistory: Move[] = []
 
-	constructor(fen: string = INITIAL_FEN) {
+	constructor(fen: string = DEFAULT_FEN) {
 		this.state = parseFen(fen)
 	}
 

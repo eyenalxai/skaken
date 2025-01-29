@@ -1,10 +1,10 @@
 import { perft } from "@/lib/chess/perft"
-import { INITIAL_FEN, parseFen } from "@/lib/chess/state"
+import { DEFAULT_FEN, parseFen } from "@/lib/chess/state"
 import { describe, expect, it } from "vitest"
 
 describe("perft", () => {
 	it("should calculate correct perft values for Position 1", () => {
-		const state = parseFen(INITIAL_FEN)
+		const state = parseFen(DEFAULT_FEN)
 
 		const results = [
 			{

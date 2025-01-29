@@ -25,13 +25,11 @@ export const squareToCoords = (square: Square) => {
 	return [rankToIndex(rank), fileToIndex(file)]
 }
 
-export const coordsToSquare = (rank: number, file: number) => {
-	return `${indexToFile(file)}${indexToRank(rank)}` as Square
-}
+export const coordsToSquare = (rank: number, file: number) =>
+	`${indexToFile(file)}${indexToRank(rank)}` as Square
 
-export const isInBounds = (rank: number, file: number) => {
-	return rank >= 0 && rank < 8 && file >= 0 && file < 8
-}
+export const isInBounds = (rank: number, file: number) =>
+	rank >= 0 && rank < 8 && file >= 0 && file < 8
 
 export const getPieceAt = (board: GameState["board"], square: Square) => {
 	const [rank, file] = squareToCoords(square)

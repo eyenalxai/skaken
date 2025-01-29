@@ -19,7 +19,7 @@ export type GameState = {
 	fullmoveNumber: number
 }
 
-export const INITIAL_FEN =
+export const DEFAULT_FEN =
 	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 export const isPiece = (char: string) => {
