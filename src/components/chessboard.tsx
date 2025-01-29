@@ -33,7 +33,6 @@ const pieceMap: Record<PieceType, "K" | "Q" | "R" | "B" | "N" | "P"> = {
 }
 
 const STRATEGY_OPTIONS = [
-	{ value: "none", label: "Human" },
 	{ value: "random", label: "Random" },
 	{ value: "capture", label: "Capture Only" },
 	{ value: "minimax-1", label: "Minimax (Depth 1)" },
@@ -55,8 +54,9 @@ export const Chessboard = () => {
 	const [gameState, setGameState] = useState<GameState>(parseFen(DEFAULT_FEN))
 	const [isPlaying, setIsPlaying] = useState(false)
 	const [customFen, setCustomFen] = useState(DEFAULT_FEN)
-	const [whiteStrategy, setWhiteStrategy] = useState("none")
-	const [blackStrategy, setBlackStrategy] = useState("none")
+	const [whiteStrategy, setWhiteStrategy] = useState("random")
+	const [blackStrategy, setBlackStrategy] = useState("random")
+	const [statusMessage, setStatusMessage] = useState<string>("")
 	const gameRef = useRef<ChessGame>(new ChessGame(DEFAULT_FEN, BOARD_SIZE))
 	const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
@@ -66,14 +66,42 @@ export const Chessboard = () => {
 		game.setBlackStrategy(getStrategy(blackStrategy))
 	}, [whiteStrategy, blackStrategy])
 
+	const updateGameStatus = () => {
+		const game = gameRef.current
+		const state = game.getState()
+		const status = game.getStatus()
+
+		switch (status) {
+			case "checkmate":
+				setStatusMessage(
+					`Game Over - ${state.activeColor === "w" ? "Black" : "White"} wins by checkmate!`
+				)
+				return true
+			case "stalemate":
+				setStatusMessage("Game Over - Draw by stalemate!")
+				return true
+			case "check":
+				setStatusMessage(
+					`${state.activeColor === "w" ? "White" : "Black"} is in check!`
+				)
+				return false
+			default:
+				setStatusMessage(
+					`${state.activeColor === "w" ? "White" : "Black"} to move`
+				)
+				return false
+		}
+	}
+
 	const startGame = () => {
 		setIsPlaying(true)
+		updateGameStatus()
 		intervalRef.current = setInterval(() => {
 			const game = gameRef.current
 			const state = game.getState()
-			const status = game.getStatus()
+			const gameEnded = updateGameStatus()
 
-			if (status === "checkmate" || status === "stalemate") {
+			if (gameEnded) {
 				stopGame()
 				return
 			}
@@ -102,11 +130,13 @@ export const Chessboard = () => {
 		try {
 			gameRef.current = new ChessGame(customFen, BOARD_SIZE)
 			setGameState(gameRef.current.getState())
+			setStatusMessage("Game reset - White to move")
 		} catch (error) {
 			console.error("Invalid FEN:", error)
 			gameRef.current = new ChessGame(DEFAULT_FEN, BOARD_SIZE)
 			setGameState(gameRef.current.getState())
 			setCustomFen(DEFAULT_FEN)
+			setStatusMessage("Invalid FEN - Game reset to starting position")
 		}
 	}
 
@@ -204,6 +234,19 @@ export const Chessboard = () => {
 						)
 					})
 				)}
+			</div>
+
+			<div
+				className={cn(
+					"text-center",
+					"font-medium",
+					"h-6",
+					statusMessage.includes("Game Over")
+						? "text-primary"
+						: "text-muted-foreground"
+				)}
+			>
+				{statusMessage}
 			</div>
 		</div>
 	)
