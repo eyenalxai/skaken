@@ -92,6 +92,20 @@ describe("Chess Strategies", () => {
 			// Verify it's actually check
 			game.makeMove(move)
 			expect(game.getStatus()).toBe("check")
+
+			game.makeMove({ from: "f4", to: "g2" })
+
+			expect(game.getStatus()).toBe("active")
+
+			const moveTwo = strategy.getMove(game)
+
+			expect(moveTwo).not.toBeNull()
+			if (!moveTwo) return
+			expect(moveTwo.from).toBe("g3")
+			expect(moveTwo.to).toBe("g2")
+
+			game.makeMove(moveTwo)
+			expect(game.getStatus()).toBe("checkmate")
 		})
 
 		it("should capture free piece", () => {
