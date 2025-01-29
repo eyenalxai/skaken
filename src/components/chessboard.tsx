@@ -190,7 +190,7 @@ export const Chessboard = () => {
 									"items-center",
 									"justify-center",
 									"aspect-square",
-									isLight ? "bg-background" : "bg-muted"
+									isLight ? "bg-muted" : "bg-muted-foreground"
 								)}
 							>
 								{piece && (
