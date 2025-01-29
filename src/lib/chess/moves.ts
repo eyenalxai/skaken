@@ -121,11 +121,9 @@ const getPawnMoves = (
 			const correctRank = color === "w" ? 3 : 4
 			if (rank !== correctRank) continue
 
-			const capturedPawnRank = rank
-			const capturedPawnFile = captureFile
 			const capturedPawn = getPieceAt(
 				state.board,
-				coordsToSquare(capturedPawnRank, capturedPawnFile)
+				coordsToSquare(rank, captureFile)
 			)
 
 			if (capturedPawn?.[1] === "p" && capturedPawn?.[0] !== color) {
@@ -451,9 +449,7 @@ const movePutsKingInCheck = (state: GameState, move: Move) => {
 		movingPiece[1] === "p" &&
 		move.to === state.enPassantTarget
 	) {
-		const capturedPawnRank = fromRank
-		const capturedPawnFile = toFile
-		newBoard[capturedPawnRank][capturedPawnFile] = null
+		newBoard[fromRank][toFile] = null
 	}
 
 	newBoard[toRank][toFile] = newBoard[fromRank][fromFile]

@@ -18,7 +18,7 @@ import {
 export type GameStatus = "active" | "check" | "checkmate" | "stalemate" | "draw"
 
 export class ChessGame {
-	private state: GameState
+	private readonly state: GameState
 	private moveHistory: Move[] = []
 
 	constructor(fen: string = INITIAL_FEN) {
@@ -123,9 +123,7 @@ export class ChessGame {
 
 		// Handle en passant capture
 		if (movingPiece[1] === "p" && move.to === this.state.enPassantTarget) {
-			const capturedPawnRank = fromRank
-			const capturedPawnFile = toFile
-			this.state.board[capturedPawnRank][capturedPawnFile] = null
+			this.state.board[fromRank][toFile] = null
 		}
 
 		// Update board position
