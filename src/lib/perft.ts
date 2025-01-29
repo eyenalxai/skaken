@@ -20,14 +20,14 @@ export type PerftResult = {
 	checkmates: number
 }
 
-const isCapture = (state: GameState, move: Move): boolean => {
+const isCapture = (state: GameState, move: Move) => {
 	const [toRank, toFile] = squareToCoords(move.to)
 	return (
 		state.board[toRank][toFile] !== null || state.enPassantTarget === move.to
 	)
 }
 
-const isCastle = (state: GameState, move: Move): boolean => {
+const isCastle = (state: GameState, move: Move) => {
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const piece = state.board[fromRank][fromFile]
 	if (!piece || piece[1] !== "k") return false
@@ -35,15 +35,12 @@ const isCastle = (state: GameState, move: Move): boolean => {
 	return Math.abs(fromFile - squareToCoords(move.to)[1]) === 2
 }
 
-const isEnPassant = (state: GameState, move: Move): boolean => {
-	return move.to === state.enPassantTarget
-}
+const isEnPassant = (state: GameState, move: Move) =>
+	move.to === state.enPassantTarget
 
-const isPromotion = (move: Move): boolean => {
-	return move.promotion !== undefined
-}
+const isPromotion = (move: Move) => move.promotion !== undefined
 
-const isDiscoveryCheck = (state: GameState, move: Move): boolean => {
+const isDiscoveryCheck = (state: GameState, move: Move) => {
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const movingPiece = state.board[fromRank][fromFile]
 	if (!movingPiece) return false
@@ -76,7 +73,7 @@ const isDiscoveryCheck = (state: GameState, move: Move): boolean => {
 	return isSquareUnderAttack(tempState, kingSquare, opponentColor)
 }
 
-const isDoubleCheck = (game: ChessGame, move: Move): boolean => {
+const isDoubleCheck = (game: ChessGame, move: Move) => {
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const movingPiece = game.getState().board[fromRank][fromFile]
 	if (!movingPiece) return false
@@ -125,7 +122,7 @@ const isDoubleCheck = (game: ChessGame, move: Move): boolean => {
 	return false
 }
 
-export const perft = (state: GameState, depth: number): PerftResult => {
+export const perft = (state: GameState, depth: number) => {
 	if (depth === 0) {
 		return {
 			nodes: 1,
@@ -137,10 +134,10 @@ export const perft = (state: GameState, depth: number): PerftResult => {
 			discoveryChecks: 0,
 			doubleChecks: 0,
 			checkmates: 0
-		}
+		} satisfies PerftResult
 	}
 
-	const result: PerftResult = {
+	const result = {
 		nodes: 0,
 		captures: 0,
 		enPassant: 0,
@@ -150,7 +147,7 @@ export const perft = (state: GameState, depth: number): PerftResult => {
 		discoveryChecks: 0,
 		doubleChecks: 0,
 		checkmates: 0
-	}
+	} satisfies PerftResult
 
 	// Get all pieces of the active color
 	for (let rank = 0; rank < 8; rank++) {
@@ -204,5 +201,5 @@ export const perft = (state: GameState, depth: number): PerftResult => {
 		}
 	}
 
-	return result
+	return result satisfies PerftResult
 }
