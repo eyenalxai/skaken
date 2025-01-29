@@ -76,6 +76,24 @@ describe("Chess Strategies", () => {
 			expect(game.getStatus()).toBe("checkmate")
 		})
 
+		it("should find mate in two", () => {
+			// Position where white can mate in one with Qh6#
+			const game = new ChessGame(
+				"4r3/1pp2rbk/6pn/4n3/P3BN1q/1PB2bPP/8/2Q1RRK1 b - - 0 31"
+			)
+			const strategy = new MinimaxStrategy(2)
+			const move = strategy.getMove(game)
+
+			expect(move).not.toBeNull()
+			if (!move) return
+			expect(move.from).toBe("h4")
+			expect(move.to).toBe("g3")
+
+			// Verify it's actually mate
+			game.makeMove(move)
+			expect(game.getStatus()).toBe("check")
+		})
+
 		it("should capture free piece", () => {
 			// Position where white can capture an undefended queen
 			const game = new ChessGame("4k3/8/8/3q4/4P3/8/8/4K3 w - - 0 1")
