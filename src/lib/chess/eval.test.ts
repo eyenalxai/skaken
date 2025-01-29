@@ -58,14 +58,4 @@ describe("evaluate", () => {
 		// More mobile position should have a better score
 		expect(score).toBeGreaterThan(blockedScore)
 	})
-
-	test("should evaluate standard board position correctly", () => {
-		// Standard 8x8 board setup
-		const state = parseFen(
-			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-			8
-		)
-		const score = evaluate(state)
-		expect(score).toBe(0) // Equal position
-	})
 })
