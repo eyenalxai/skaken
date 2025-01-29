@@ -1,3 +1,9 @@
+import { Chessboard } from "@/components/chessboard"
+
 export default function Page() {
-	return <main>Hello</main>
+	return (
+		<main>
+			<Chessboard />
+		</main>
+	)
 }
