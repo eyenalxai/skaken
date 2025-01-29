@@ -89,7 +89,7 @@ describe("Chess Strategies", () => {
 			expect(move.from).toBe("h4")
 			expect(move.to).toBe("g3")
 
-			// Verify it's actually mate
+			// Verify it's actually check
 			game.makeMove(move)
 			expect(game.getStatus()).toBe("check")
 		})
