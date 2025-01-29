@@ -1,5 +1,6 @@
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import { GeistMono } from "geist/font/mono"
 import { GeistSans } from "geist/font/sans"
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 					>
 						{children}
 					</div>
+					<Toaster />
 				</Providers>
 			</body>
 		</html>
