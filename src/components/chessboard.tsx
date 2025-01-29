@@ -3,23 +3,11 @@
 import { ChessGame } from "@/lib/chess/game"
 import type { GameState, PieceType } from "@/lib/chess/state"
 import { DEFAULT_FEN, parseFen } from "@/lib/chess/state"
-import {
-	CaptureOnlyStrategy,
-	MinimaxStrategy,
-	RandomStrategy
-} from "@/lib/chess/strategy"
 import { cn } from "@/lib/utils"
 import { Piece } from "@chessire/pieces"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from "./ui/select"
 
 const BOARD_SIZE = 8
 
@@ -32,39 +20,11 @@ const pieceMap: Record<PieceType, "K" | "Q" | "R" | "B" | "N" | "P"> = {
 	p: "P"
 }
 
-const STRATEGY_OPTIONS = [
-	{ value: "random", label: "Random" },
-	{ value: "capture", label: "Capture Only" },
-	{ value: "minimax-1", label: "Minimax (Depth 1)" },
-	{ value: "minimax-2", label: "Minimax (Depth 2)" },
-	{ value: "minimax-3", label: "Minimax (Depth 3)" }
-]
-
-const getStrategy = (strategyValue: string) => {
-	if (strategyValue === "none") return null
-	if (strategyValue === "random") return new RandomStrategy()
-	if (strategyValue === "capture") return new CaptureOnlyStrategy()
-	if (strategyValue.startsWith("minimax-")) {
-		return new MinimaxStrategy(Number(strategyValue.split("-")[1]) || 2)
-	}
-	return null
-}
-
 export const Chessboard = () => {
 	const [gameState, setGameState] = useState<GameState>(parseFen(DEFAULT_FEN))
-	const [isPlaying, setIsPlaying] = useState(false)
 	const [customFen, setCustomFen] = useState(DEFAULT_FEN)
-	const [whiteStrategy, setWhiteStrategy] = useState("random")
-	const [blackStrategy, setBlackStrategy] = useState("random")
 	const [statusMessage, setStatusMessage] = useState<string>("")
 	const gameRef = useRef<ChessGame>(new ChessGame(DEFAULT_FEN, BOARD_SIZE))
-	const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-	useEffect(() => {
-		const game = gameRef.current
-		game.setWhiteStrategy(getStrategy(whiteStrategy))
-		game.setBlackStrategy(getStrategy(blackStrategy))
-	}, [whiteStrategy, blackStrategy])
 
 	const updateGameStatus = () => {
 		const game = gameRef.current
@@ -93,40 +53,7 @@ export const Chessboard = () => {
 		}
 	}
 
-	const startGame = () => {
-		setIsPlaying(true)
-		updateGameStatus()
-		intervalRef.current = setInterval(() => {
-			const game = gameRef.current
-			const state = game.getState()
-			const gameEnded = updateGameStatus()
-
-			if (gameEnded) {
-				stopGame()
-				return
-			}
-
-			const activeStrategy =
-				state.activeColor === "w"
-					? game.getWhiteStrategy()
-					: game.getBlackStrategy()
-
-			if (activeStrategy) {
-				game.makeStrategyMove()
-				setGameState({ ...game.getState() })
-			}
-		}, 200)
-	}
-
-	const stopGame = () => {
-		setIsPlaying(false)
-		if (intervalRef.current) {
-			clearInterval(intervalRef.current)
-		}
-	}
-
 	const resetGame = () => {
-		stopGame()
 		try {
 			gameRef.current = new ChessGame(customFen, BOARD_SIZE)
 			setGameState(gameRef.current.getState())
@@ -159,38 +86,6 @@ export const Chessboard = () => {
 					className={cn("font-mono", "text-sm")}
 				/>
 				<Button onClick={resetGame}>Reset</Button>
-			</div>
-
-			<div className={cn("flex", "gap-2", "w-full")}>
-				<Select value={whiteStrategy} onValueChange={setWhiteStrategy}>
-					<SelectTrigger>
-						<SelectValue placeholder="White Strategy" />
-					</SelectTrigger>
-					<SelectContent>
-						{STRATEGY_OPTIONS.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-
-				<Select value={blackStrategy} onValueChange={setBlackStrategy}>
-					<SelectTrigger>
-						<SelectValue placeholder="Black Strategy" />
-					</SelectTrigger>
-					<SelectContent>
-						{STRATEGY_OPTIONS.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-
-				<Button onClick={isPlaying ? stopGame : startGame}>
-					{isPlaying ? "Pause" : "Start"}
-				</Button>
 			</div>
 
 			<div
