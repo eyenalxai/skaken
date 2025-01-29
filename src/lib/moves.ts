@@ -129,7 +129,12 @@ const getPawnMoves = (
 					coordsToSquare(capturedPawnRank, captureFile)
 				)
 
-				if (capturedPawn?.[1] === "p" && capturedPawn?.[0] !== color) {
+				if (
+					capturedPawn?.[1] === "p" &&
+					capturedPawn?.[0] !== color &&
+					rank === correctRank &&
+					Math.abs(captureFile - file) === 1
+				) {
 					moves.push({
 						from: coordsToSquare(rank, file),
 						to: targetSquare

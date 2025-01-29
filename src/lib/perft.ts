@@ -20,11 +20,10 @@ export type PerftResult = {
 	checkmates: number
 }
 
-const isCapture = (state: GameState, move: Move) => {
+const isCapture = (state: GameState, move: Move): boolean => {
 	const [toRank, toFile] = squareToCoords(move.to)
-	return (
-		state.board[toRank][toFile] !== null || state.enPassantTarget === move.to
-	)
+	// Only count regular captures, not en passant (which is counted separately)
+	return state.board[toRank][toFile] !== null
 }
 
 const isCastle = (state: GameState, move: Move) => {

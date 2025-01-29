@@ -178,9 +178,24 @@ export class ChessGame {
 
 		// Update en passant target
 		if (movingPiece[1] === "p" && Math.abs(toRank - fromRank) === 2) {
-			const enPassantRank = (fromRank + toRank) / 2
-			this.state.enPassantTarget =
-				`${String.fromCharCode(fromFile + 97)}${8 - enPassantRank}` as Square
+			// Only set en passant target if there are enemy pawns adjacent that could capture
+			const enemyPawnRank = this.state.activeColor === "w" ? 3 : 4
+			const adjacentFiles = [fromFile - 1, fromFile + 1]
+				.filter((f) => f >= 0 && f < 8)
+				.filter((f) => {
+					const piece = this.state.board[enemyPawnRank][f]
+					return (
+						piece && piece[0] !== this.state.activeColor && piece[1] === "p"
+					)
+				})
+
+			if (adjacentFiles.length > 0) {
+				const enPassantRank = (fromRank + toRank) / 2
+				this.state.enPassantTarget =
+					`${String.fromCharCode(fromFile + 97)}${8 - enPassantRank}` as Square
+			} else {
+				this.state.enPassantTarget = null
+			}
 		} else {
 			this.state.enPassantTarget = null
 		}
