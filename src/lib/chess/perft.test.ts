@@ -1,6 +1,6 @@
+import { perft } from "@/lib/chess/perft"
+import { INITIAL_FEN, parseFen } from "@/lib/chess/state"
 import { describe, expect, it } from "vitest"
-import { perft } from "./perft"
-import { INITIAL_FEN, parseFen } from "./state"
 
 describe("perft", () => {
 	it("should calculate correct perft values for Position 1", () => {

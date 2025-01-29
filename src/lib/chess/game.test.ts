@@ -1,6 +1,6 @@
+import { ChessGame } from "@/lib/chess/game"
+import type { Move } from "@/lib/chess/moves"
 import { describe, expect, it } from "vitest"
-import { ChessGame } from "./game"
-import type { Move } from "./moves"
 
 describe("ChessGame", () => {
 	describe("Initial state", () => {
