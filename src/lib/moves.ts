@@ -120,9 +120,11 @@ const getPawnMoves = (
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
 		if (targetSquare === state.enPassantTarget) {
-			const capturedPawnRank = rank // The captured pawn is on the same rank as the capturing pawn
-			const capturedPawnFile = captureFile // The captured pawn is on the same file as the en passant target
+			const correctRank = color === "w" ? 3 : 4
+			if (rank !== correctRank) continue
 
+			const capturedPawnRank = rank
+			const capturedPawnFile = captureFile
 			const capturedPawn = getPieceAt(
 				state.board,
 				coordsToSquare(capturedPawnRank, capturedPawnFile)

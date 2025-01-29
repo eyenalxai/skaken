@@ -40,8 +40,15 @@ const isCastle = (state: GameState, move: Move) => {
 	return Math.abs(fromFile - squareToCoords(move.to)[1]) === 2
 }
 
-const isEnPassant = (state: GameState, move: Move) =>
-	move.to === state.enPassantTarget
+const isEnPassant = (state: GameState, move: Move) => {
+	const [fromRank, fromFile] = squareToCoords(move.from)
+	const movingPiece = state.board[fromRank][fromFile]
+	return (
+		movingPiece?.[1] === "p" &&
+		move.to === state.enPassantTarget &&
+		state.enPassantTarget !== null
+	)
+}
 
 const isPromotion = (move: Move) => move.promotion !== undefined
 
@@ -165,18 +172,24 @@ export const perft = (state: GameState, depth: number) => {
 
 			for (const move of moves) {
 				const game = new ChessGame(toFen(state))
-				game.makeMove(move)
+				if (!game.makeMove(move)) continue
+
+				const newState = game.getState()
+				const subPerft = perft(newState, depth - 1)
+
+				result.nodes += subPerft.nodes
+				result.captures +=
+					depth === 1 ? (isCapture(state, move) ? 1 : 0) : subPerft.captures
+				result.enPassant +=
+					depth === 1 ? (isEnPassant(state, move) ? 1 : 0) : subPerft.enPassant
+				result.castles +=
+					depth === 1 ? (isCastle(state, move) ? 1 : 0) : subPerft.castles
+				result.promotions +=
+					depth === 1 ? (isPromotion(move) ? 1 : 0) : subPerft.promotions
 
 				if (depth === 1) {
-					result.captures += isCapture(state, move) ? 1 : 0
-					result.enPassant += isEnPassant(state, move) ? 1 : 0
-					result.castles += isCastle(state, move) ? 1 : 0
-					result.promotions += isPromotion(move) ? 1 : 0
-
 					const status = game.getStatus()
-					const isCheck = status === "check" || status === "checkmate"
-
-					if (isCheck) {
+					if (status === "check" || status === "checkmate") {
 						result.checks++
 						if (isDiscoveryCheck(state, move)) {
 							result.discoveryChecks++
@@ -185,18 +198,10 @@ export const perft = (state: GameState, depth: number) => {
 							result.doubleChecks++
 						}
 					}
-
-					result.checkmates += status === "checkmate" ? 1 : 0
-				}
-
-				const subPerft = perft(game.getState(), depth - 1)
-
-				result.nodes += subPerft.nodes
-				if (depth > 1) {
-					result.captures += subPerft.captures
-					result.enPassant += subPerft.enPassant
-					result.castles += subPerft.castles
-					result.promotions += subPerft.promotions
+					if (status === "checkmate") {
+						result.checkmates++
+					}
+				} else {
 					result.checks += subPerft.checks
 					result.discoveryChecks += subPerft.discoveryChecks
 					result.doubleChecks += subPerft.doubleChecks
