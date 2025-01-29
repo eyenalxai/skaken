@@ -121,7 +121,7 @@ const getPawnMoves = (
 
 		if (targetSquare === state.enPassantTarget) {
 			const capturedPawnRank = rank // The captured pawn is on the same rank as the capturing pawn
-			const capturedPawnFile = captureFile
+			const capturedPawnFile = captureFile // The captured pawn is on the same file as the en passant target
 
 			const capturedPawn = getPieceAt(
 				state.board,
