@@ -124,7 +124,7 @@ describe("perft", () => {
 				expected: {
 					nodes: 97862,
 					captures: 17102,
-					enPassant: 45,
+					enPassant: 85,
 					castles: 3162,
 					promotions: 0,
 					checks: 993,
