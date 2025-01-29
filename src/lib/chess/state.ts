@@ -1,12 +1,45 @@
 export type Color = "w" | "b"
 export type PieceType = "p" | "n" | "b" | "r" | "q" | "k"
 export type Piece = `${Color}${PieceType}`
-export type File = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"
-export type Rank = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8"
+export type File =
+	| "a"
+	| "b"
+	| "c"
+	| "d"
+	| "e"
+	| "f"
+	| "g"
+	| "h"
+	| "i"
+	| "j"
+	| "k"
+	| "l"
+	| "m"
+	| "n"
+	| "o"
+	| "p"
+export type Rank =
+	| "1"
+	| "2"
+	| "3"
+	| "4"
+	| "5"
+	| "6"
+	| "7"
+	| "8"
+	| "9"
+	| "10"
+	| "11"
+	| "12"
+	| "13"
+	| "14"
+	| "15"
+	| "16"
 export type Square = `${File}${Rank}`
 
 export type GameState = {
 	board: (Piece | null)[][]
+	boardSize: number
 	activeColor: Color
 	castling: {
 		whiteKingSide: boolean
@@ -34,13 +67,16 @@ export const isPiece = (char: string) => {
 	)
 }
 
-export const isSquare = (square: string) => {
-	if (square.length !== 2) return false
-	const [file, rank] = square.split("")
-	return (
-		["a", "b", "c", "d", "e", "f", "g", "h"].includes(file) &&
-		["1", "2", "3", "4", "5", "6", "7", "8"].includes(rank)
+export const isSquare = (square: string, boardSize = 8) => {
+	if (square.length < 2 || square.length > 3) return false
+	if (boardSize < 8 || boardSize > 16) return false
+	const [file, ...rankDigits] = square.split("")
+	const rank = rankDigits.join("")
+	const validFiles = "abcdefghijklmnop".slice(0, boardSize)
+	const validRanks = Array.from({ length: boardSize }, (_, i) =>
+		(i + 1).toString()
 	)
+	return validFiles.includes(file) && validRanks.includes(rank)
 }
 
 export const charToPiece = (char: string): Piece => {
@@ -60,7 +96,7 @@ const isValidCastlingString = (castling: string) =>
 	([...castling].every((char) => "KQkq".includes(char)) &&
 		new Set(castling).size === castling.length)
 
-export const parseFen = (fen: string): GameState => {
+export const parseFen = (fen: string, boardSize = 8): GameState => {
 	const [position, activeColor, castling, enPassant, halfmove, fullmove] =
 		fen.split(" ")
 
@@ -68,11 +104,15 @@ export const parseFen = (fen: string): GameState => {
 		throw new Error("Invalid FEN: must contain 6 parts")
 	}
 
+	if (boardSize < 8 || boardSize > 16) {
+		throw new Error("Invalid board size: must be between 8 and 16")
+	}
+
 	const board: (Piece | null)[][] = []
 	const ranks = position.split("/")
 
-	if (ranks.length !== 8) {
-		throw new Error("Invalid FEN: board must have 8 ranks")
+	if (ranks.length !== boardSize) {
+		throw new Error(`Invalid FEN: board must have ${boardSize} ranks`)
 	}
 
 	for (const rank of ranks) {
@@ -84,17 +124,17 @@ export const parseFen = (fen: string): GameState => {
 			if (Number.isNaN(emptySquares)) {
 				row.push(charToPiece(char))
 			} else {
-				if (emptySquares < 1 || emptySquares > 8) {
+				if (emptySquares < 1 || emptySquares > boardSize) {
 					throw new Error(
-						`Invalid FEN: number of empty squares must be between 1 and 8, got ${emptySquares}`
+						`Invalid FEN: number of empty squares must be between 1 and ${boardSize}, got ${emptySquares}`
 					)
 				}
 				row.push(...Array(emptySquares).fill(null))
 			}
 		}
 
-		if (row.length !== 8) {
-			throw new Error("Invalid FEN: each rank must have 8 squares")
+		if (row.length !== boardSize) {
+			throw new Error(`Invalid FEN: each rank must have ${boardSize} squares`)
 		}
 
 		board.push(row)
@@ -143,6 +183,7 @@ export const parseFen = (fen: string): GameState => {
 
 	return {
 		board,
+		boardSize,
 		activeColor: activeColor as Color,
 		castling: castlingRights,
 		enPassantTarget,

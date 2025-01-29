@@ -21,8 +21,8 @@ export type PerftResult = {
 }
 
 const isCapture = (state: GameState, move: Move) => {
-	const [toRank, toFile] = squareToCoords(move.to)
-	const [fromRank, fromFile] = squareToCoords(move.from)
+	const [toRank, toFile] = squareToCoords(move.to, state.boardSize)
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
 	const movingPiece = state.board[fromRank][fromFile]
 
 	return (
@@ -32,15 +32,15 @@ const isCapture = (state: GameState, move: Move) => {
 }
 
 const isCastle = (state: GameState, move: Move) => {
-	const [fromRank, fromFile] = squareToCoords(move.from)
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
 	const piece = state.board[fromRank][fromFile]
 	if (!piece || piece[1] !== "k") return false
 
-	return Math.abs(fromFile - squareToCoords(move.to)[1]) === 2
+	return Math.abs(fromFile - squareToCoords(move.to, state.boardSize)[1]) === 2
 }
 
 const isEnPassant = (state: GameState, move: Move) => {
-	const [fromRank, fromFile] = squareToCoords(move.from)
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
 	const movingPiece = state.board[fromRank][fromFile]
 	return movingPiece?.[1] === "p" && move.to === state.enPassantTarget
 }
@@ -48,7 +48,7 @@ const isEnPassant = (state: GameState, move: Move) => {
 const isPromotion = (move: Move) => move.promotion !== undefined
 
 const isDiscoveryCheck = (state: GameState, move: Move) => {
-	const [fromRank, fromFile] = squareToCoords(move.from)
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
 	const movingPiece = state.board[fromRank][fromFile]
 	if (!movingPiece) return false
 
@@ -59,22 +59,23 @@ const isDiscoveryCheck = (state: GameState, move: Move) => {
 	tempState.board[fromRank][fromFile] = null
 
 	const opponentColor = state.activeColor === "w" ? "b" : "w"
-	const kingSquare = findKingSquare(state.board, opponentColor)
+	const kingSquare = findKingSquare(state.board, opponentColor, state.boardSize)
 
 	return kingSquare
-		? isSquareUnderAttack(tempState, kingSquare, opponentColor)
+		? isSquareUnderAttack(tempState, kingSquare, opponentColor, state.boardSize)
 		: false
 }
 
 const findKingSquare = (
 	board: GameState["board"],
-	color: "w" | "b"
+	color: "w" | "b",
+	boardSize: number
 ): Square | null => {
-	for (let rank = 0; rank < 8; rank++) {
-		for (let file = 0; file < 8; file++) {
+	for (let rank = 0; rank < boardSize; rank++) {
+		for (let file = 0; file < boardSize; file++) {
 			const piece = board[rank][file]
 			if (piece && piece[0] === color && piece[1] === "k") {
-				return coordsToSquare(rank, file)
+				return coordsToSquare(rank, file, boardSize)
 			}
 		}
 	}
@@ -82,25 +83,30 @@ const findKingSquare = (
 }
 
 const isDoubleCheck = (game: ChessGame, move: Move) => {
-	const [fromRank, fromFile] = squareToCoords(move.from)
-	const movingPiece = game.getState().board[fromRank][fromFile]
+	const state = game.getState()
+	const [fromRank, fromFile] = squareToCoords(move.from, state.boardSize)
+	const movingPiece = state.board[fromRank][fromFile]
 	if (!movingPiece) return false
 
-	const tempGame = new ChessGame(toFen(game.getState()))
+	const tempGame = new ChessGame(toFen(state), state.boardSize)
 	if (!tempGame.makeMove(move)) return false
 
-	const opponentColor = game.getState().activeColor === "w" ? "b" : "w"
+	const opponentColor = state.activeColor === "w" ? "b" : "w"
 	const newState = tempGame.getState()
-	const kingSquare = findKingSquare(newState.board, opponentColor)
+	const kingSquare = findKingSquare(
+		newState.board,
+		opponentColor,
+		state.boardSize
+	)
 	if (!kingSquare) return false
 
 	let checkCount = 0
-	for (let rank = 0; rank < 8; rank++) {
-		for (let file = 0; file < 8; file++) {
+	for (let rank = 0; rank < state.boardSize; rank++) {
+		for (let file = 0; file < state.boardSize; file++) {
 			const piece = newState.board[rank][file]
-			if (!piece || piece[0] !== game.getState().activeColor) continue
+			if (!piece || piece[0] !== state.activeColor) continue
 
-			const square = coordsToSquare(rank, file)
+			const square = coordsToSquare(rank, file, state.boardSize)
 			const moves = getValidMoves(newState, square)
 
 			if (moves.some((m) => m.to === kingSquare)) {
@@ -140,16 +146,16 @@ export const perft = (state: GameState, depth: number): PerftResult => {
 		checkmates: 0
 	}
 
-	for (let rank = 0; rank < 8; rank++) {
-		for (let file = 0; file < 8; file++) {
+	for (let rank = 0; rank < state.boardSize; rank++) {
+		for (let file = 0; file < state.boardSize; file++) {
 			const piece = state.board[rank][file]
 			if (!piece || piece[0] !== state.activeColor) continue
 
-			const square = coordsToSquare(rank, file)
+			const square = coordsToSquare(rank, file, state.boardSize)
 			const moves = getValidMoves(state, square)
 
 			for (const move of moves) {
-				const game = new ChessGame(toFen(state))
+				const game = new ChessGame(toFen(state), state.boardSize)
 				if (!game.makeMove(move)) continue
 
 				const newState = game.getState()
