@@ -20,31 +20,23 @@ const generatePawnTable = (size: number): number[][] => {
 
 	for (let rank = 0; rank < size; rank++) {
 		for (let file = 0; file < size; file++) {
-			// Convert current position to relative position (0 to 1)
 			const relativeRank = rank / (size - 1)
 			const relativeFile = file / (size - 1)
 			const center = size / 2 - 0.5
 			const distanceFromCenter = Math.abs(file - center) / (size / 2)
 
-			// Base value from center control
 			let value = 20 - Math.floor(40 * distanceFromCenter)
 
-			// Pawn advancement bonus (higher in early ranks)
 			if (relativeRank < 0.25) {
-				// Second rank
 				value += 50
 			} else if (relativeRank < 0.5) {
-				// Middle ranks
 				value += 30
 			} else if (relativeRank < 0.75) {
-				// Advanced ranks
 				value += 20
 			} else {
-				// Back ranks
 				value += 5
 			}
 
-			// Extra bonus for central files
 			if (relativeFile > 0.25 && relativeFile < 0.75) {
 				value += 10
 			}
@@ -67,7 +59,6 @@ const generateKnightTable = (size: number): number[][] => {
 				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
 				((Math.sqrt(2) * size) / 2)
 
-			// Knights are best in the center, worst on edges
 			table[rank][file] = Math.floor(20 - 70 * distanceFromCenter)
 		}
 	}
@@ -86,7 +77,6 @@ const generateBishopTable = (size: number): number[][] => {
 				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
 				((Math.sqrt(2) * size) / 2)
 
-			// Bishops prefer diagonals and center control
 			table[rank][file] = Math.floor(10 - 30 * distanceFromCenter)
 		}
 	}
@@ -100,12 +90,9 @@ const generateRookTable = (size: number): number[][] => {
 
 	for (let rank = 0; rank < size; rank++) {
 		for (let file = 0; file < size; file++) {
-			// Rooks prefer 7th rank and open files
 			if (rank === 1) {
-				// Second to last rank
 				table[rank][file] = 20
 			} else if (file === size / 2 - 1 || file === size / 2) {
-				// Central files
 				table[rank][file] = 10
 			}
 		}
@@ -125,7 +112,6 @@ const generateQueenTable = (size: number): number[][] => {
 				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
 				((Math.sqrt(2) * size) / 2)
 
-			// Queen combines aspects of rook and bishop
 			table[rank][file] = Math.floor(5 - 25 * distanceFromCenter)
 		}
 	}
@@ -143,9 +129,7 @@ const generateKingMiddleGameTable = (size: number): number[][] => {
 			const center = size / 2 - 0.5
 			const distanceFromCenter = Math.abs(file - center) / (size / 2)
 
-			// King prefers to stay in the back rank during middle game
 			if (relativeRank > 0.8) {
-				// Back rank
 				table[rank][file] = -20 + Math.floor(40 * (1 - distanceFromCenter))
 			} else {
 				table[rank][file] = -50 + Math.floor(20 * distanceFromCenter)
@@ -167,7 +151,6 @@ const generateKingEndGameTable = (size: number): number[][] => {
 				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
 				((Math.sqrt(2) * size) / 2)
 
-			// King should be active in endgame
 			table[rank][file] = Math.floor(40 - 90 * distanceFromCenter)
 		}
 	}
