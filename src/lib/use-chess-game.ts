@@ -118,26 +118,8 @@ export const useChessGame = () => {
 		}
 	}, [playerControls, chessboard, gameOutcome, isPaused])
 
-	const onPieceDrop = (sourceSquare: Square, targetSquare: Square) => {
-		try {
-			const chessboardCopy = new ChessGame(chessboard.getFen())
-			const success = chessboardCopy.makeMove({
-				from: sourceSquare,
-				to: targetSquare
-			})
-			if (success) {
-				setChessboard(chessboardCopy)
-			}
-			return success
-		} catch (error) {
-			toast.error(`${error}`)
-			return false
-		}
-	}
-
 	return {
 		chessboard,
-		onPieceDrop,
 		disabled: gameOutcome !== null || isPaused,
 		playerControls,
 		setPlayerStrategy,
