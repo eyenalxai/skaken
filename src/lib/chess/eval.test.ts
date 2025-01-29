@@ -76,4 +76,22 @@ describe("evaluate", () => {
 		const score = evaluate(state)
 		expect(score).toBe(0)
 	})
+
+	test("should evaluate 11x11 starting position as equal", () => {
+		const state = parseFen(
+			"rnbqkbnrqqq/ppppppppqqq/92/92/92/92/92/92/92/PPPPPPPPQQQ/RNBQKBNRQQQ w - - 0 1",
+			11
+		)
+		const score = evaluate(state)
+		expect(score).toBe(0)
+	})
+
+	test("should evaluate 12x12 starting position as equal", () => {
+		const state = parseFen(
+			"rnbqkbnrqrbn/ppppppppnbrq/84/84/84/84/84/84/84/84/PPPPPPPPNBRQ/RNBQKBNRQRBN w - - 0 1",
+			12
+		)
+		const score = evaluate(state)
+		expect(score).toBe(0)
+	})
 })
