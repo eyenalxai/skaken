@@ -179,7 +179,7 @@ export class ChessGame {
 		// Update en passant target
 		if (movingPiece[1] === "p" && Math.abs(toRank - fromRank) === 2) {
 			// Only set en passant target if there are enemy pawns adjacent that could capture
-			const enemyPawnRank = this.state.activeColor === "w" ? 3 : 4
+			const enemyPawnRank = toRank // Change back to toRank - enemy pawns must be on the destination rank
 			const adjacentFiles = [fromFile - 1, fromFile + 1]
 				.filter((f) => f >= 0 && f < 8)
 				.filter((f) => {
