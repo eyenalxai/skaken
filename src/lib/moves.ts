@@ -40,32 +40,30 @@ export const getPieceAt = (board: GameState["board"], square: Square) => {
 
 export const getValidMoves = (state: GameState, square: Square) => {
 	const piece = getPieceAt(state.board, square)
-	if (!piece) return []
+	if (!piece || piece[0] !== state.activeColor) return []
 
 	const [color, type] = piece
-	if (color !== state.activeColor) return []
-
-	const moves: Move[] = []
 	const [rank, file] = squareToCoords(square)
+	const moves: Move[] = []
 
 	switch (type) {
 		case "p":
-			moves.push(...getPawnMoves(state, rank, file, color))
+			moves.push(...getPawnMoves(state, rank, file, color as Color))
 			break
 		case "n":
-			moves.push(...getKnightMoves(state, rank, file, color))
+			moves.push(...getKnightMoves(state, rank, file, color as Color))
 			break
 		case "b":
-			moves.push(...getBishopMoves(state, rank, file, color))
+			moves.push(...getBishopMoves(state, rank, file, color as Color))
 			break
 		case "r":
-			moves.push(...getRookMoves(state, rank, file, color))
+			moves.push(...getRookMoves(state, rank, file, color as Color))
 			break
 		case "q":
-			moves.push(...getQueenMoves(state, rank, file, color))
+			moves.push(...getQueenMoves(state, rank, file, color as Color))
 			break
 		case "k":
-			moves.push(...getKingMoves(state, rank, file, color))
+			moves.push(...getKingMoves(state, rank, file, color as Color))
 			break
 	}
 
@@ -157,7 +155,7 @@ const getPawnMoves = (
 	return moves
 }
 
-const KNIGHT_MOVES: [number, number][] = [
+const KNIGHT_OFFSETS: [number, number][] = [
 	[-2, -1],
 	[-2, 1],
 	[-1, -2],
@@ -176,7 +174,7 @@ const getKnightMoves = (
 ) => {
 	const moves: Move[] = []
 
-	for (const [dRank, dFile] of KNIGHT_MOVES) {
+	for (const [dRank, dFile] of KNIGHT_OFFSETS) {
 		const newRank = rank + dRank
 		const newFile = file + dFile
 
@@ -242,6 +240,22 @@ const BISHOP_DIRECTIONS: [number, number][] = [
 	[1, -1],
 	[1, 1]
 ]
+const ROOK_DIRECTIONS: [number, number][] = [
+	[-1, 0],
+	[1, 0],
+	[0, -1],
+	[0, 1]
+]
+const KING_OFFSETS: [number, number][] = [
+	[-1, -1],
+	[-1, 0],
+	[-1, 1],
+	[0, -1],
+	[0, 1],
+	[1, -1],
+	[1, 0],
+	[1, 1]
+]
 
 const getBishopMoves = (
 	state: GameState,
@@ -249,13 +263,6 @@ const getBishopMoves = (
 	file: number,
 	color: Color
 ) => getSlidingMoves(state, rank, file, BISHOP_DIRECTIONS, color)
-
-const ROOK_DIRECTIONS: [number, number][] = [
-	[-1, 0],
-	[1, 0],
-	[0, -1],
-	[0, 1]
-]
 
 const getRookMoves = (
 	state: GameState,
@@ -278,17 +285,6 @@ const getQueenMoves = (
 		color
 	)
 
-const KING_MOVES: [number, number][] = [
-	[-1, -1],
-	[-1, 0],
-	[-1, 1],
-	[0, -1],
-	[0, 1],
-	[1, -1],
-	[1, 0],
-	[1, 1]
-]
-
 const getKingMoves = (
 	state: GameState,
 	rank: number,
@@ -298,7 +294,7 @@ const getKingMoves = (
 ) => {
 	const moves: Move[] = []
 
-	for (const [dRank, dFile] of KING_MOVES) {
+	for (const [dRank, dFile] of KING_OFFSETS) {
 		const newRank = rank + dRank
 		const newFile = file + dFile
 

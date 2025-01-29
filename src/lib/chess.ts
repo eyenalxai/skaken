@@ -37,21 +37,16 @@ export const isPiece = (char: string) => {
 export const isSquare = (square: string) => {
 	if (square.length !== 2) return false
 	const [file, rank] = square.split("")
-
 	return (
 		["a", "b", "c", "d", "e", "f", "g", "h"].includes(file) &&
 		["1", "2", "3", "4", "5", "6", "7", "8"].includes(rank)
 	)
 }
 
-export const charToPiece = (char: string) => {
-	if (!isPiece(char)) {
-		throw new Error(`Invalid piece character: ${char}`)
-	}
-
+export const charToPiece = (char: string): Piece => {
+	if (!isPiece(char)) throw new Error(`Invalid piece character: ${char}`)
 	const color: Color = char === char.toUpperCase() ? "w" : "b"
 	const pieceType: PieceType = char.toLowerCase() as PieceType
-
 	return `${color}${pieceType}` as Piece
 }
 
@@ -60,23 +55,18 @@ const isValidEnPassantSquare = (square: Square) => {
 	return rank === "3" || rank === "6"
 }
 
-const isValidCastlingString = (castling: string) => {
-	if (castling === "-") return true
+const isValidCastlingString = (castling: string) =>
+	castling === "-" ||
+	([...castling].every((char) => "KQkq".includes(char)) &&
+		new Set(castling).size === castling.length)
 
-	return (
-		[...castling].every((char) => "KQkq".includes(char)) &&
-		new Set(castling).size === castling.length
-	)
-}
+export const parseFen = (fen: string): GameState => {
+	const [position, activeColor, castling, enPassant, halfmove, fullmove] =
+		fen.split(" ")
 
-export const parseFen = (fen: string) => {
-	const parts = fen.split(" ")
-
-	if (parts.length !== 6) {
+	if (fen.split(" ").length !== 6) {
 		throw new Error("Invalid FEN: must contain 6 parts")
 	}
-
-	const [position, activeColor, castling, enPassant, halfmove, fullmove] = parts
 
 	const board: (Piece | null)[][] = []
 	const ranks = position.split("/")
@@ -99,9 +89,7 @@ export const parseFen = (fen: string) => {
 						`Invalid FEN: number of empty squares must be between 1 and 8, got ${emptySquares}`
 					)
 				}
-				for (let j = 0; j < emptySquares; j++) {
-					row.push(null)
-				}
+				row.push(...Array(emptySquares).fill(null))
 			}
 		}
 
@@ -138,7 +126,6 @@ export const parseFen = (fen: string) => {
 	}
 
 	const enPassantTarget = enPassant === "-" ? null : (enPassant as Square)
-
 	const halfmoveClock = Number.parseInt(halfmove)
 	const fullmoveNumber = Number.parseInt(fullmove)
 
@@ -177,7 +164,6 @@ export const toFen = (state: GameState): string => {
 				}
 
 				const [color, type] = piece
-
 				return `${acc}${color === "w" ? type.toUpperCase() : type}`
 			}, "")
 		)

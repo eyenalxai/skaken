@@ -20,16 +20,15 @@ export type PerftResult = {
 	checkmates: number
 }
 
-const isCapture = (state: GameState, move: Move): boolean => {
+const isCapture = (state: GameState, move: Move) => {
 	const [toRank, toFile] = squareToCoords(move.to)
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const movingPiece = state.board[fromRank][fromFile]
 
-	// Count both regular captures and en passant captures
-	if (movingPiece?.[1] === "p" && move.to === state.enPassantTarget) {
-		return true
-	}
-	return state.board[toRank][toFile] !== null
+	return (
+		(movingPiece?.[1] === "p" && move.to === state.enPassantTarget) ||
+		state.board[toRank][toFile] !== null
+	)
 }
 
 const isCastle = (state: GameState, move: Move) => {
@@ -43,11 +42,7 @@ const isCastle = (state: GameState, move: Move) => {
 const isEnPassant = (state: GameState, move: Move) => {
 	const [fromRank, fromFile] = squareToCoords(move.from)
 	const movingPiece = state.board[fromRank][fromFile]
-	return (
-		movingPiece?.[1] === "p" &&
-		move.to === state.enPassantTarget &&
-		state.enPassantTarget !== null
-	)
+	return movingPiece?.[1] === "p" && move.to === state.enPassantTarget
 }
 
 const isPromotion = (move: Move) => move.promotion !== undefined
@@ -57,32 +52,33 @@ const isDiscoveryCheck = (state: GameState, move: Move) => {
 	const movingPiece = state.board[fromRank][fromFile]
 	if (!movingPiece) return false
 
-	// Create a temporary state with the piece removed
 	const tempState: GameState = {
 		...state,
 		board: state.board.map((rank) => [...rank])
 	}
 	tempState.board[fromRank][fromFile] = null
 
-	// Find the opponent's king
-	let kingSquare: Square | null = null
 	const opponentColor = state.activeColor === "w" ? "b" : "w"
+	const kingSquare = findKingSquare(state.board, opponentColor)
 
+	return kingSquare
+		? isSquareUnderAttack(tempState, kingSquare, opponentColor)
+		: false
+}
+
+const findKingSquare = (
+	board: GameState["board"],
+	color: "w" | "b"
+): Square | null => {
 	for (let rank = 0; rank < 8; rank++) {
 		for (let file = 0; file < 8; file++) {
-			const piece = state.board[rank][file]
-			if (piece && piece[0] === opponentColor && piece[1] === "k") {
-				kingSquare = coordsToSquare(rank, file)
-				break
+			const piece = board[rank][file]
+			if (piece && piece[0] === color && piece[1] === "k") {
+				return coordsToSquare(rank, file)
 			}
 		}
-		if (kingSquare) break
 	}
-
-	if (!kingSquare) return false
-
-	// Check if removing the piece reveals a check
-	return isSquareUnderAttack(tempState, kingSquare, opponentColor)
+	return null
 }
 
 const isDoubleCheck = (game: ChessGame, move: Move) => {
@@ -90,32 +86,15 @@ const isDoubleCheck = (game: ChessGame, move: Move) => {
 	const movingPiece = game.getState().board[fromRank][fromFile]
 	if (!movingPiece) return false
 
-	// Make the move
 	const tempGame = new ChessGame(toFen(game.getState()))
 	if (!tempGame.makeMove(move)) return false
 
-	// Count how many pieces are giving check
-	let checkCount = 0
 	const opponentColor = game.getState().activeColor === "w" ? "b" : "w"
-
-	// Find the opponent's king after the move
-	let kingSquare: Square | null = null
 	const newState = tempGame.getState()
-
-	for (let rank = 0; rank < 8; rank++) {
-		for (let file = 0; file < 8; file++) {
-			const piece = newState.board[rank][file]
-			if (piece && piece[0] === opponentColor && piece[1] === "k") {
-				kingSquare = coordsToSquare(rank, file)
-				break
-			}
-		}
-		if (kingSquare) break
-	}
-
+	const kingSquare = findKingSquare(newState.board, opponentColor)
 	if (!kingSquare) return false
 
-	// Count attacking pieces
+	let checkCount = 0
 	for (let rank = 0; rank < 8; rank++) {
 		for (let file = 0; file < 8; file++) {
 			const piece = newState.board[rank][file]
@@ -134,7 +113,7 @@ const isDoubleCheck = (game: ChessGame, move: Move) => {
 	return false
 }
 
-export const perft = (state: GameState, depth: number) => {
+export const perft = (state: GameState, depth: number): PerftResult => {
 	if (depth === 0) {
 		return {
 			nodes: 1,
@@ -146,10 +125,10 @@ export const perft = (state: GameState, depth: number) => {
 			discoveryChecks: 0,
 			doubleChecks: 0,
 			checkmates: 0
-		} satisfies PerftResult
+		}
 	}
 
-	const result = {
+	const result: PerftResult = {
 		nodes: 0,
 		captures: 0,
 		enPassant: 0,
@@ -159,15 +138,14 @@ export const perft = (state: GameState, depth: number) => {
 		discoveryChecks: 0,
 		doubleChecks: 0,
 		checkmates: 0
-	} satisfies PerftResult
+	}
 
-	// Get all pieces of the active color
 	for (let rank = 0; rank < 8; rank++) {
 		for (let file = 0; file < 8; file++) {
 			const piece = state.board[rank][file]
 			if (!piece || piece[0] !== state.activeColor) continue
 
-			const square = (String.fromCharCode(file + 97) + (8 - rank)) as Square
+			const square = coordsToSquare(rank, file)
 			const moves = getValidMoves(state, square)
 
 			for (const move of moves) {
@@ -178,30 +156,25 @@ export const perft = (state: GameState, depth: number) => {
 				const subPerft = perft(newState, depth - 1)
 
 				result.nodes += subPerft.nodes
-				result.captures +=
-					depth === 1 ? (isCapture(state, move) ? 1 : 0) : subPerft.captures
-				result.enPassant +=
-					depth === 1 ? (isEnPassant(state, move) ? 1 : 0) : subPerft.enPassant
-				result.castles +=
-					depth === 1 ? (isCastle(state, move) ? 1 : 0) : subPerft.castles
-				result.promotions +=
-					depth === 1 ? (isPromotion(move) ? 1 : 0) : subPerft.promotions
 
 				if (depth === 1) {
+					if (isCapture(state, move)) result.captures++
+					if (isEnPassant(state, move)) result.enPassant++
+					if (isCastle(state, move)) result.castles++
+					if (isPromotion(move)) result.promotions++
+
 					const status = game.getStatus()
 					if (status === "check" || status === "checkmate") {
 						result.checks++
-						if (isDiscoveryCheck(state, move)) {
-							result.discoveryChecks++
-						}
-						if (isDoubleCheck(game, move)) {
-							result.doubleChecks++
-						}
+						if (isDiscoveryCheck(state, move)) result.discoveryChecks++
+						if (isDoubleCheck(game, move)) result.doubleChecks++
 					}
-					if (status === "checkmate") {
-						result.checkmates++
-					}
+					if (status === "checkmate") result.checkmates++
 				} else {
+					result.captures += subPerft.captures
+					result.enPassant += subPerft.enPassant
+					result.castles += subPerft.castles
+					result.promotions += subPerft.promotions
 					result.checks += subPerft.checks
 					result.discoveryChecks += subPerft.discoveryChecks
 					result.doubleChecks += subPerft.doubleChecks
@@ -211,5 +184,5 @@ export const perft = (state: GameState, depth: number) => {
 		}
 	}
 
-	return result satisfies PerftResult
+	return result
 }
