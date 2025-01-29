@@ -1,4 +1,4 @@
-import type { Color, GameState, Piece, Square } from "@/lib/chess"
+import type { Color, GameState, Piece, Square } from "@/lib/chess/state"
 
 export type Move = {
 	from: Square

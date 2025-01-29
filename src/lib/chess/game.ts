@@ -1,4 +1,11 @@
 import {
+	type Move,
+	getPieceAt,
+	getRawMovesForPiece,
+	getValidMoves,
+	squareToCoords
+} from "@/lib/chess/moves"
+import {
 	type Color,
 	type GameState,
 	INITIAL_FEN,
@@ -6,14 +13,7 @@ import {
 	type Square,
 	parseFen,
 	toFen
-} from "@/lib/chess"
-import {
-	type Move,
-	getPieceAt,
-	getRawMovesForPiece,
-	getValidMoves,
-	squareToCoords
-} from "@/lib/moves"
+} from "@/lib/chess/state"
 
 export type GameStatus = "active" | "check" | "checkmate" | "stalemate" | "draw"
 

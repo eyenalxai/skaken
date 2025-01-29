@@ -1,12 +1,12 @@
-import { type GameState, type Square, toFen } from "@/lib/chess"
-import { ChessGame } from "@/lib/game"
+import { ChessGame } from "@/lib/chess/game"
 import {
 	type Move,
 	coordsToSquare,
 	getValidMoves,
 	isSquareUnderAttack,
 	squareToCoords
-} from "@/lib/moves"
+} from "@/lib/chess/moves"
+import { type GameState, type Square, toFen } from "@/lib/chess/state"
 
 export type PerftResult = {
 	nodes: number

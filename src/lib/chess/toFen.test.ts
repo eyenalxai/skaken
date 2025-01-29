@@ -1,5 +1,5 @@
-import { parseFen, toFen } from "@/lib/chess"
-import { INITIAL_FEN } from "@/lib/chess"
+import { parseFen, toFen } from "@/lib/chess/state"
+import { INITIAL_FEN } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("toFen", () => {

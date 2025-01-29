@@ -1,4 +1,4 @@
-import { isSquare } from "@/lib/chess"
+import { isSquare } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("isSquare", () => {

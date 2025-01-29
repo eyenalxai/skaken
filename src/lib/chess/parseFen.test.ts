@@ -1,6 +1,6 @@
-import type { GameState, Piece, Square } from "@/lib/chess"
-import { parseFen } from "@/lib/chess"
-import { INITIAL_FEN } from "@/lib/chess"
+import type { GameState, Piece, Square } from "@/lib/chess/state"
+import { parseFen } from "@/lib/chess/state"
+import { INITIAL_FEN } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("parseFen", () => {

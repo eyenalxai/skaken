@@ -1,4 +1,4 @@
-import { charToPiece, isPiece } from "@/lib/chess"
+import { charToPiece, isPiece } from "@/lib/chess/state"
 import { describe, expect, test } from "vitest"
 
 describe("isPiece", () => {

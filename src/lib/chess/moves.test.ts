@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { type Square, parseFen } from "./chess"
 import { type Move, getValidMoves } from "./moves"
+import { type Square, parseFen } from "./state"
 
 const expectMoves = (fen: string, square: Square, expectedMoves: Move[]) => {
 	const state = parseFen(fen)
