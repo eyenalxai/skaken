@@ -147,6 +147,15 @@ export class MinimaxStrategy implements ChessStrategy {
 		beta: number,
 		maximizingPlayer: boolean
 	): number {
+		// Check game status first
+		const status = game.getStatus()
+		if (status === "checkmate") {
+			return maximizingPlayer ? -20000 : 20000
+		}
+		if (status === "stalemate") {
+			return 0
+		}
+
 		if (depth === 0) {
 			return evaluate(game.getState())
 		}
@@ -168,12 +177,7 @@ export class MinimaxStrategy implements ChessStrategy {
 		}
 
 		if (allMoves.length === 0) {
-			// Game is over
-			const status = game.getStatus()
-			if (status === "checkmate") {
-				return maximizingPlayer ? -20000 : 20000
-			}
-			return 0 // Draw
+			return 0 // This should never happen as we checked status above
 		}
 
 		if (maximizingPlayer) {
