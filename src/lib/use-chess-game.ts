@@ -24,7 +24,7 @@ export const useChessGame = () => {
 		w: "random-move",
 		b: "random-move"
 	})
-	const [isPaused, setIsPaused] = useState(false)
+	const [isPaused, setIsPaused] = useState(true)
 	const [gameOutcome, setGameOutcome] = useState<GameOutcome | null>(null)
 
 	const restart = () => {
