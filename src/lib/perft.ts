@@ -22,7 +22,13 @@ export type PerftResult = {
 
 const isCapture = (state: GameState, move: Move): boolean => {
 	const [toRank, toFile] = squareToCoords(move.to)
-	// Only count regular captures, not en passant (which is counted separately)
+	const [fromRank, fromFile] = squareToCoords(move.from)
+	const movingPiece = state.board[fromRank][fromFile]
+
+	// Count both regular captures and en passant captures
+	if (movingPiece?.[1] === "p" && move.to === state.enPassantTarget) {
+		return true
+	}
 	return state.board[toRank][toFile] !== null
 }
 

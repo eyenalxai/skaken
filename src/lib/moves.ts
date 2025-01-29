@@ -120,26 +120,19 @@ const getPawnMoves = (
 		const targetPiece = getPieceAt(state.board, targetSquare)
 
 		if (targetSquare === state.enPassantTarget) {
-			const correctRank = color === "w" ? 3 : 4
-			const capturedPawnRank = color === "w" ? 3 : 4
+			const capturedPawnRank = rank // The captured pawn is on the same rank as the capturing pawn
+			const capturedPawnFile = captureFile
 
-			if (rank === correctRank) {
-				const capturedPawn = getPieceAt(
-					state.board,
-					coordsToSquare(capturedPawnRank, captureFile)
-				)
+			const capturedPawn = getPieceAt(
+				state.board,
+				coordsToSquare(capturedPawnRank, capturedPawnFile)
+			)
 
-				if (
-					capturedPawn?.[1] === "p" &&
-					capturedPawn?.[0] !== color &&
-					rank === correctRank &&
-					Math.abs(captureFile - file) === 1
-				) {
-					moves.push({
-						from: coordsToSquare(rank, file),
-						to: targetSquare
-					})
-				}
+			if (capturedPawn?.[1] === "p" && capturedPawn?.[0] !== color) {
+				moves.push({
+					from: coordsToSquare(rank, file),
+					to: targetSquare
+				})
 			}
 		} else if (targetPiece && targetPiece[0] !== color) {
 			if (newRank === promotionRank) {
@@ -298,7 +291,8 @@ const getKingMoves = (
 	state: GameState,
 	rank: number,
 	file: number,
-	color: Color
+	color: Color,
+	includeCastling = true
 ) => {
 	const moves: Move[] = []
 
@@ -318,6 +312,8 @@ const getKingMoves = (
 			})
 		}
 	}
+
+	if (!includeCastling) return moves
 
 	if (color === "w") {
 		if (state.castling.whiteKingSide && canCastleKingSide(state, "w")) {
@@ -406,7 +402,8 @@ export const isSquareUnderAttack = (
 				tempState,
 				rank,
 				file,
-				piece[0] as Color
+				piece[0] as Color,
+				false // Don't include castling moves when checking for attacks
 			)
 
 			if (moves.some((m) => m.to === square)) {
@@ -421,7 +418,8 @@ export const getRawMovesForPiece = (
 	state: GameState,
 	rank: number,
 	file: number,
-	color: Color
+	color: Color,
+	includeCastling = true
 ) => {
 	const piece = state.board[rank][file]
 	if (!piece) return []
@@ -438,7 +436,7 @@ export const getRawMovesForPiece = (
 		case "q":
 			return getQueenMoves(state, rank, file, color)
 		case "k":
-			return getKingMoves(state, rank, file, color)
+			return getKingMoves(state, rank, file, color, includeCastling)
 		default:
 			return []
 	}
