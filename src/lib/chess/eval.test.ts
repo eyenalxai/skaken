@@ -58,4 +58,14 @@ describe("evaluate", () => {
 		// More mobile position should have a better score
 		expect(score).toBeGreaterThan(blockedScore)
 	})
+
+	test("should evaluate 9x9 starting position as equal", () => {
+		const state = parseFen(
+			"rnbqkbnrr/ppppppppp/9/9/9/9/9/PPPPPPPPP/RNBQKBNRR w - - 0 1",
+			9
+		)
+		const score = evaluate(state)
+		// Allow for small floating-point differences in evaluation
+		expect(Math.abs(score)).toBeLessThan(1)
+	})
 })
