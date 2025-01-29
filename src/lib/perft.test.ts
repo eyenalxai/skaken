@@ -3,7 +3,7 @@ import { INITIAL_FEN, parseFen } from "./chess"
 import { perft } from "./perft"
 
 describe("perft", () => {
-	it("should calculate correct perft values for initial position", () => {
+	it("should calculate correct perft values for Position 1", () => {
 		const state = parseFen(INITIAL_FEN)
 
 		const results = [
@@ -85,7 +85,7 @@ describe("perft", () => {
 		}
 	})
 
-	it("should calculate correct perft values for Kiwipete position", () => {
+	it("should calculate correct perft values for Position 2", () => {
 		const kiwipeteFen =
 			"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
 		const state = parseFen(kiwipeteFen)
