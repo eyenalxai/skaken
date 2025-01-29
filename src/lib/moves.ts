@@ -382,7 +382,7 @@ const canCastleQueenSide = (state: GameState, color: Color) => {
 	)
 }
 
-const isSquareUnderAttack = (
+export const isSquareUnderAttack = (
 	state: GameState,
 	square: Square,
 	defendingColor: Color
