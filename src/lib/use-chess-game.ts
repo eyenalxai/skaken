@@ -1,5 +1,7 @@
 "use client"
 
+import { ChessGame } from "@/lib/chess/game"
+import type { Color, Square } from "@/lib/chess/state"
 import {
 	berserkMove,
 	pacifistMove,
@@ -7,29 +9,28 @@ import {
 } from "@/lib/chess/strategy/basic"
 import { getBestMove } from "@/lib/chess/strategy/stockfish"
 import {
-	type ControlMethod,
 	type GameOutcome,
 	type PlayerControls,
 	type SetPlayerStrategy,
+	type Strategy,
 	exhaustiveCheck
 } from "@/lib/types"
-import { Chess, type Color, type Square } from "chess.js"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 export const useChessGame = () => {
-	const [chessboard, setChessboard] = useState(new Chess())
+	const [chessboard, setChessboard] = useState(new ChessGame())
 	const [playerControls, setPlayerControls] = useState<PlayerControls>({
-		w: "manual",
-		b: "manual"
+		w: "random-move",
+		b: "random-move"
 	})
 	const [isPaused, setIsPaused] = useState(false)
 	const [gameOutcome, setGameOutcome] = useState<GameOutcome | null>(null)
 
 	const restart = () => {
-		setChessboard(new Chess())
+		setChessboard(new ChessGame())
 		setGameOutcome(null)
-		setPlayerControls({ w: "manual", b: "manual" })
+		setPlayerControls({ w: "random-move", b: "random-move" })
 		setIsPaused(false)
 	}
 
@@ -38,7 +39,7 @@ export const useChessGame = () => {
 	const setPlayerStrategy: SetPlayerStrategy = ({
 		player,
 		strategy
-	}: { player: Color; strategy: ControlMethod }) => {
+	}: { player: Color; strategy: Strategy }) => {
 		setPlayerControls((prev) => {
 			const newPlayerControls = { ...prev }
 			newPlayerControls[player] = strategy
@@ -47,29 +48,36 @@ export const useChessGame = () => {
 	}
 
 	useEffect(() => {
-		if (chessboard.isThreefoldRepetition())
-			setGameOutcome("threefold-repetition")
-		if (chessboard.isDraw()) setGameOutcome("draw")
-		if (chessboard.isCheckmate()) setGameOutcome("checkmate")
-		if (chessboard.isStalemate()) setGameOutcome("stalemate")
-		if (chessboard.isInsufficientMaterial())
-			setGameOutcome("insufficient-material")
+		const status = chessboard.getStatus()
+		switch (status) {
+			case "checkmate":
+				setGameOutcome("checkmate")
+				break
+			case "stalemate":
+				setGameOutcome("stalemate")
+				break
+			case "check":
+			case "active":
+				// Game continues
+				break
+			default:
+				exhaustiveCheck(status)
+		}
 	}, [chessboard])
 
 	useEffect(() => {
 		if (isPaused) return
 		if (gameOutcome !== null) return
 
-		const strategy = playerControls[chessboard.turn()]
-
-		if (strategy === "manual") return
+		const state = chessboard.getState()
+		const strategy = playerControls[state.activeColor]
 
 		const controller = new AbortController()
 		const signal = controller.signal
 
 		const makeMove = async () => {
 			const executeStrategy = () => {
-				const fen = chessboard.fen()
+				const fen = chessboard.getFen()
 				switch (strategy) {
 					case "random-move":
 						return randomMove(fen)
@@ -87,8 +95,16 @@ export const useChessGame = () => {
 			const chessMove = await executeStrategy()
 			if (chessMove === null) return
 
-			const chessboardCopy = new Chess(chessboard.fen())
-			chessboardCopy.move(chessMove)
+			const chessboardCopy = new ChessGame(chessboard.getFen())
+			if (typeof chessMove === "string") {
+				chessboardCopy.makeMove({
+					from: chessMove.slice(0, 2) as Square,
+					to: chessMove.slice(2, 4) as Square,
+					promotion: chessMove[4] as "q" | "r" | "b" | "n" | undefined
+				})
+			} else {
+				chessboardCopy.makeMove(chessMove)
+			}
 			setChessboard(chessboardCopy)
 		}
 
@@ -104,14 +120,15 @@ export const useChessGame = () => {
 
 	const onPieceDrop = (sourceSquare: Square, targetSquare: Square) => {
 		try {
-			const chessboardCopy = new Chess(chessboard.fen())
-			const move = chessboardCopy.move({
+			const chessboardCopy = new ChessGame(chessboard.getFen())
+			const success = chessboardCopy.makeMove({
 				from: sourceSquare,
 				to: targetSquare
 			})
-			setChessboard(chessboardCopy)
-
-			return move !== null
+			if (success) {
+				setChessboard(chessboardCopy)
+			}
+			return success
 		} catch (error) {
 			toast.error(`${error}`)
 			return false
@@ -121,10 +138,7 @@ export const useChessGame = () => {
 	return {
 		chessboard,
 		onPieceDrop,
-		disabled:
-			playerControls[chessboard.turn()] !== "manual" ||
-			gameOutcome !== null ||
-			isPaused,
+		disabled: gameOutcome !== null || isPaused,
 		playerControls,
 		setPlayerStrategy,
 		gameOutcome,
