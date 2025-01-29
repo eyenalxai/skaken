@@ -65,7 +65,15 @@ describe("evaluate", () => {
 			9
 		)
 		const score = evaluate(state)
-		// Allow for small floating-point differences in evaluation
-		expect(Math.abs(score)).toBeLessThan(1)
+		expect(score).toBe(0)
+	})
+
+	test("should evaluate 10x10 starting position as equal", () => {
+		const state = parseFen(
+			"rnbqkbnrrr/pppppppppp/91/91/91/91/91/91/PPPPPPPPPP/RNBQKBNRRR w - - 0 1",
+			10
+		)
+		const score = evaluate(state)
+		expect(score).toBe(0)
 	})
 })

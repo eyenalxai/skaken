@@ -246,9 +246,10 @@ const getPositionalScore = (
 	const endgame = isEndgame(state)
 	const table = getPieceSquareTable(pieceType, state.boardSize, endgame)
 
-	// For black pieces, we flip the rank index
+	// For black pieces, flip both rank and file indices
 	const rankIndex = color === "w" ? rank : state.boardSize - 1 - rank
-	return table[rankIndex][file]
+	const fileIndex = color === "w" ? file : state.boardSize - 1 - file
+	return table[rankIndex][fileIndex]
 }
 
 // Evaluate mobility (number of legal moves)
@@ -260,7 +261,14 @@ const evaluateMobility = (state: GameState, color: Color): number => {
 			if (!piece || piece[0] !== color) continue
 
 			const square = coordsToSquare(rank, file, state.boardSize)
-			const moves = getValidMoves({ ...state, activeColor: color }, square)
+			const moves = getValidMoves(
+				{
+					...state,
+					board: state.board.map((row) => [...row]),
+					activeColor: color
+				},
+				square
+			)
 			mobility += moves.length
 		}
 	}
@@ -270,6 +278,8 @@ const evaluateMobility = (state: GameState, color: Color): number => {
 // Main evaluation function
 export const evaluate = (state: GameState): number => {
 	let score = 0
+	let materialScore = 0
+	let positionalScore = 0
 
 	// Material and positional evaluation
 	for (let rank = 0; rank < state.boardSize; rank++) {
@@ -281,18 +291,23 @@ export const evaluate = (state: GameState): number => {
 			const positionalValue = getPositionalScore(piece, rank, file, state)
 
 			if (piece[0] === "w") {
-				score += pieceValue + positionalValue
+				materialScore += pieceValue
+				positionalScore += positionalValue
 			} else {
-				score -= pieceValue + positionalValue
+				materialScore -= pieceValue
+				positionalScore -= positionalValue
 			}
 		}
 	}
 
+	score = materialScore + positionalScore
+
 	// Mobility evaluation (weighted less than material)
-	const mobilityWeight = 0.1
-	score +=
-		mobilityWeight *
-		(evaluateMobility(state, "w") - evaluateMobility(state, "b"))
+	// Normalize mobility by board size to maintain consistent scale
+	const mobilityWeight = 0.1 / state.boardSize
+	const whiteMobility = evaluateMobility(state, "w")
+	const blackMobility = evaluateMobility(state, "b")
+	score += mobilityWeight * (whiteMobility - blackMobility)
 
 	// Return the score from white's perspective
 	return score
