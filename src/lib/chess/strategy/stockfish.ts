@@ -1,16 +1,10 @@
 import { fetcher } from "@/lib/fetch"
 
-type GetBestMoveMoveProps = {
-	fen: string
-	maxTime: number
+export const getBestMove = async (
+	fen: string,
+	maxTime: number,
 	signal: AbortSignal
-}
-
-export const getBestMove = async ({
-	fen,
-	maxTime,
-	signal
-}: GetBestMoveMoveProps) => {
+) => {
 	return fetcher({
 		endpoint: "/api/stockfish/best-move",
 		method: "POST",
