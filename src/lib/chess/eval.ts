@@ -11,92 +11,214 @@ const PIECE_VALUES: Record<string, number> = {
 	k: 20000
 }
 
-// Piece-square tables for positional evaluation
+// Functions to generate piece-square tables for any board size
 // Values are in centipawns and from white's perspective
-const PAWN_TABLE = [
-	[0, 0, 0, 0, 0, 0, 0, 0],
-	[50, 50, 50, 50, 50, 50, 50, 50],
-	[10, 10, 20, 30, 30, 20, 10, 10],
-	[5, 5, 10, 25, 25, 10, 5, 5],
-	[0, 0, 0, 20, 20, 0, 0, 0],
-	[5, -5, -10, 0, 0, -10, -5, 5],
-	[5, 10, 10, -20, -20, 10, 10, 5],
-	[0, 0, 0, 0, 0, 0, 0, 0]
-]
+const generatePawnTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
 
-const KNIGHT_TABLE = [
-	[-50, -40, -30, -30, -30, -30, -40, -50],
-	[-40, -20, 0, 0, 0, 0, -20, -40],
-	[-30, 0, 10, 15, 15, 10, 0, -30],
-	[-30, 5, 15, 20, 20, 15, 5, -30],
-	[-30, 0, 15, 20, 20, 15, 0, -30],
-	[-30, 5, 10, 15, 15, 10, 5, -30],
-	[-40, -20, 0, 5, 5, 0, -20, -40],
-	[-50, -40, -30, -30, -30, -30, -40, -50]
-]
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			// Convert current position to relative position (0 to 1)
+			const relativeRank = rank / (size - 1)
+			const relativeFile = file / (size - 1)
+			const center = size / 2 - 0.5
+			const distanceFromCenter = Math.abs(file - center) / (size / 2)
 
-const BISHOP_TABLE = [
-	[-20, -10, -10, -10, -10, -10, -10, -20],
-	[-10, 0, 0, 0, 0, 0, 0, -10],
-	[-10, 0, 5, 10, 10, 5, 0, -10],
-	[-10, 5, 5, 10, 10, 5, 5, -10],
-	[-10, 0, 10, 10, 10, 10, 0, -10],
-	[-10, 10, 10, 10, 10, 10, 10, -10],
-	[-10, 5, 0, 0, 0, 0, 5, -10],
-	[-20, -10, -10, -10, -10, -10, -10, -20]
-]
+			// Base value from center control
+			let value = 20 - Math.floor(40 * distanceFromCenter)
 
-const ROOK_TABLE = [
-	[0, 0, 0, 0, 0, 0, 0, 0],
-	[5, 10, 10, 10, 10, 10, 10, 5],
-	[-5, 0, 0, 0, 0, 0, 0, -5],
-	[-5, 0, 0, 0, 0, 0, 0, -5],
-	[-5, 0, 0, 0, 0, 0, 0, -5],
-	[-5, 0, 0, 0, 0, 0, 0, -5],
-	[-5, 0, 0, 0, 0, 0, 0, -5],
-	[0, 0, 0, 5, 5, 0, 0, 0]
-]
+			// Pawn advancement bonus (higher in early ranks)
+			if (relativeRank < 0.25) {
+				// Second rank
+				value += 50
+			} else if (relativeRank < 0.5) {
+				// Middle ranks
+				value += 30
+			} else if (relativeRank < 0.75) {
+				// Advanced ranks
+				value += 20
+			} else {
+				// Back ranks
+				value += 5
+			}
 
-const QUEEN_TABLE = [
-	[-20, -10, -10, -5, -5, -10, -10, -20],
-	[-10, 0, 0, 0, 0, 0, 0, -10],
-	[-10, 0, 5, 5, 5, 5, 0, -10],
-	[-5, 0, 5, 5, 5, 5, 0, -5],
-	[0, 0, 5, 5, 5, 5, 0, -5],
-	[-10, 5, 5, 5, 5, 5, 0, -10],
-	[-10, 0, 5, 0, 0, 0, 0, -10],
-	[-20, -10, -10, -5, -5, -10, -10, -20]
-]
+			// Extra bonus for central files
+			if (relativeFile > 0.25 && relativeFile < 0.75) {
+				value += 10
+			}
 
-const KING_MIDDLE_GAME_TABLE = [
-	[-30, -40, -40, -50, -50, -40, -40, -30],
-	[-30, -40, -40, -50, -50, -40, -40, -30],
-	[-30, -40, -40, -50, -50, -40, -40, -30],
-	[-30, -40, -40, -50, -50, -40, -40, -30],
-	[-20, -30, -30, -40, -40, -30, -30, -20],
-	[-10, -20, -20, -20, -20, -20, -20, -10],
-	[20, 20, 0, 0, 0, 0, 20, 20],
-	[20, 30, 10, 0, 0, 10, 30, 20]
-]
+			table[rank][file] = value
+		}
+	}
+	return table
+}
 
-const KING_END_GAME_TABLE = [
-	[-50, -40, -30, -20, -20, -30, -40, -50],
-	[-30, -20, -10, 0, 0, -10, -20, -30],
-	[-30, -10, 20, 30, 30, 20, -10, -30],
-	[-30, -10, 30, 40, 40, 30, -10, -30],
-	[-30, -10, 30, 40, 40, 30, -10, -30],
-	[-30, -10, 20, 30, 30, 20, -10, -30],
-	[-30, -30, 0, 0, 0, 0, -30, -30],
-	[-50, -30, -30, -30, -30, -30, -30, -50]
-]
+const generateKnightTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
 
-const PIECE_SQUARE_TABLES: Record<string, number[][]> = {
-	p: PAWN_TABLE,
-	n: KNIGHT_TABLE,
-	b: BISHOP_TABLE,
-	r: ROOK_TABLE,
-	q: QUEEN_TABLE,
-	k: KING_MIDDLE_GAME_TABLE
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			const center = size / 2 - 0.5
+			const distanceFromCenter =
+				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
+				((Math.sqrt(2) * size) / 2)
+
+			// Knights are best in the center, worst on edges
+			table[rank][file] = Math.floor(20 - 70 * distanceFromCenter)
+		}
+	}
+	return table
+}
+
+const generateBishopTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
+
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			const center = size / 2 - 0.5
+			const distanceFromCenter =
+				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
+				((Math.sqrt(2) * size) / 2)
+
+			// Bishops prefer diagonals and center control
+			table[rank][file] = Math.floor(10 - 30 * distanceFromCenter)
+		}
+	}
+	return table
+}
+
+const generateRookTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
+
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			// Rooks prefer 7th rank and open files
+			if (rank === 1) {
+				// Second to last rank
+				table[rank][file] = 20
+			} else if (file === size / 2 - 1 || file === size / 2) {
+				// Central files
+				table[rank][file] = 10
+			}
+		}
+	}
+	return table
+}
+
+const generateQueenTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
+
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			const center = size / 2 - 0.5
+			const distanceFromCenter =
+				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
+				((Math.sqrt(2) * size) / 2)
+
+			// Queen combines aspects of rook and bishop
+			table[rank][file] = Math.floor(5 - 25 * distanceFromCenter)
+		}
+	}
+	return table
+}
+
+const generateKingMiddleGameTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
+
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			const relativeRank = rank / (size - 1)
+			const center = size / 2 - 0.5
+			const distanceFromCenter = Math.abs(file - center) / (size / 2)
+
+			// King prefers to stay in the back rank during middle game
+			if (relativeRank > 0.8) {
+				// Back rank
+				table[rank][file] = -20 + Math.floor(40 * (1 - distanceFromCenter))
+			} else {
+				table[rank][file] = -50 + Math.floor(20 * distanceFromCenter)
+			}
+		}
+	}
+	return table
+}
+
+const generateKingEndGameTable = (size: number): number[][] => {
+	const table: number[][] = Array(size)
+		.fill(0)
+		.map(() => Array(size).fill(0))
+
+	for (let rank = 0; rank < size; rank++) {
+		for (let file = 0; file < size; file++) {
+			const center = size / 2 - 0.5
+			const distanceFromCenter =
+				Math.sqrt((rank - center) ** 2 + (file - center) ** 2) /
+				((Math.sqrt(2) * size) / 2)
+
+			// King should be active in endgame
+			table[rank][file] = Math.floor(40 - 90 * distanceFromCenter)
+		}
+	}
+	return table
+}
+
+// Cache for generated tables
+const tableCache = new Map<string, number[][]>()
+
+// Get the appropriate piece square table for the current board size
+const getPieceSquareTable = (
+	piece: string,
+	boardSize: number,
+	endgame = false
+): number[][] => {
+	const cacheKey = `${piece}_${boardSize}_${endgame}`
+	const cachedTable = tableCache.get(cacheKey)
+	if (cachedTable) {
+		return cachedTable
+	}
+
+	let table: number[][]
+	switch (piece) {
+		case "p":
+			table = generatePawnTable(boardSize)
+			break
+		case "n":
+			table = generateKnightTable(boardSize)
+			break
+		case "b":
+			table = generateBishopTable(boardSize)
+			break
+		case "r":
+			table = generateRookTable(boardSize)
+			break
+		case "q":
+			table = generateQueenTable(boardSize)
+			break
+		case "k":
+			table = endgame
+				? generateKingEndGameTable(boardSize)
+				: generateKingMiddleGameTable(boardSize)
+			break
+		default:
+			table = Array(boardSize)
+				.fill(0)
+				.map(() => Array(boardSize).fill(0))
+	}
+
+	tableCache.set(cacheKey, table)
+	return table
 }
 
 // Helper function to determine if we're in endgame
@@ -121,20 +243,12 @@ const getPositionalScore = (
 ): number => {
 	const pieceType = piece[1]
 	const color = piece[0]
-	const table =
-		pieceType === "k" && isEndgame(state)
-			? KING_END_GAME_TABLE
-			: PIECE_SQUARE_TABLES[pieceType]
-
-	if (!table) return 0
+	const endgame = isEndgame(state)
+	const table = getPieceSquareTable(pieceType, state.boardSize, endgame)
 
 	// For black pieces, we flip the rank index
 	const rankIndex = color === "w" ? rank : state.boardSize - 1 - rank
-	// Scale the table values based on board size
-	const scaledRank = Math.floor((rankIndex * 8) / state.boardSize)
-	const scaledFile = Math.floor((file * 8) / state.boardSize)
-
-	return table[scaledRank][scaledFile]
+	return table[rankIndex][file]
 }
 
 // Evaluate mobility (number of legal moves)
