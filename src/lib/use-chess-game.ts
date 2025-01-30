@@ -109,7 +109,11 @@ export const useChessGame = () => {
 		}
 
 		const timeout = setTimeout(() => {
-			makeMove().catch((error) => toast.error(`${error}`))
+			makeMove().catch((error) => {
+				const errorMessage = `Error making move: ${error}`
+				console.error(errorMessage)
+				return toast.error(errorMessage)
+			})
 		}, 400)
 
 		return () => {
