@@ -8,15 +8,27 @@ import {
 	randomMove
 } from "@/lib/chess/strategy/basic"
 import { getBestMove } from "@/lib/chess/strategy/stockfish"
-import {
-	type GameOutcome,
-	type PlayerControls,
-	type SetPlayerStrategy,
-	type Strategy,
-	exhaustiveCheck
-} from "@/lib/types"
+import { exhaustiveCheck } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+
+export type GameOutcome =
+	| "threefold-repetition"
+	| "draw"
+	| "checkmate"
+	| "stalemate"
+	| "insufficient-material"
+
+export type Strategy = "random-move" | "stockfish" | "berserk" | "pacifist"
+
+export type SetPlayerStrategy = ({
+	player,
+	strategy
+}: { player: Color; strategy: Strategy }) => void
+
+export type PlayerControls = {
+	[key in Color]: Strategy
+}
 
 export const useChessGame = () => {
 	const [chessboard, setChessboard] = useState(new ChessGame())

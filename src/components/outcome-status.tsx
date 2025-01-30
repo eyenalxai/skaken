@@ -1,4 +1,4 @@
-import type { GameOutcome } from "@/lib/types"
+import type { GameOutcome } from "@/lib/use-chess-game"
 import { cn } from "@/lib/utils"
 
 type OutcomeStatusProps = {

@@ -8,7 +8,7 @@ import {
 	SelectValue
 } from "@/components/ui/select"
 import type { Color } from "@/lib/chess/state"
-import type { SetPlayerStrategy, Strategy } from "@/lib/types"
+import type { SetPlayerStrategy, Strategy } from "@/lib/use-chess-game"
 import { cn } from "@/lib/utils"
 
 type SelectStrategyProps = {
