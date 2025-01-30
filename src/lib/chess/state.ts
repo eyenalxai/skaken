@@ -1,6 +1,9 @@
 export type Color = "w" | "b"
+
 export type PieceType = "p" | "n" | "b" | "r" | "q" | "k"
+
 export type Piece = `${Color}${PieceType}`
+
 export type File =
 	| "a"
 	| "b"
@@ -18,6 +21,7 @@ export type File =
 	| "n"
 	| "o"
 	| "p"
+
 export type Rank =
 	| "1"
 	| "2"
@@ -35,6 +39,7 @@ export type Rank =
 	| "14"
 	| "15"
 	| "16"
+
 export type Square = `${File}${Rank}`
 
 export type GameState = {
