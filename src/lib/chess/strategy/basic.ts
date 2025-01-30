@@ -1,10 +1,8 @@
 import { ChessGame } from "@/lib/chess/game"
-import { getAllValidMoves } from "@/lib/chess/moves"
 import {
 	getAllCaptureMoves,
 	getAllNonCaptureMoves,
-	moveToAlgebraic,
-	movesToAlgebraic
+	getAllValidMoves
 } from "@/lib/chess/moves"
 import {
 	getBestMove,
@@ -13,36 +11,50 @@ import {
 
 export const berserkMove = async (fen: string, signal: AbortSignal) => {
 	const chessboard = new ChessGame(fen)
+	const state = chessboard.getState()
 
-	const captureMoves = getAllCaptureMoves(chessboard.getState())
+	const captureMoves = getAllCaptureMoves(state)
 
-	if (captureMoves.length === 1)
-		return moveToAlgebraic(chessboard.getState(), captureMoves[0])
+	if (captureMoves.length === 1) {
+		const move = captureMoves[0]
+		return `${move.from}${move.to}${move.promotion || ""}`
+	}
 
-	if (captureMoves.length > 1)
+	if (captureMoves.length > 1) {
+		const uciMoves = captureMoves.map(
+			(move) => `${move.from}${move.to}${move.promotion || ""}`
+		)
 		return await getBestMoveFromList({
 			fen,
-			moves: movesToAlgebraic(chessboard.getState(), captureMoves),
+			moves: uciMoves,
 			signal
 		})
+	}
 
 	return await getBestMove(fen, 100, signal)
 }
 
 export const pacifistMove = async (fen: string, signal: AbortSignal) => {
 	const chessboard = new ChessGame(fen)
+	const state = chessboard.getState()
 
-	const nonCaptureMoves = getAllNonCaptureMoves(chessboard.getState())
+	const nonCaptureMoves = getAllNonCaptureMoves(state)
 
-	if (nonCaptureMoves.length === 1)
-		return moveToAlgebraic(chessboard.getState(), nonCaptureMoves[0])
+	if (nonCaptureMoves.length === 1) {
+		const move = nonCaptureMoves[0]
+		return `${move.from}${move.to}${move.promotion || ""}`
+	}
 
-	if (nonCaptureMoves.length > 1)
+	if (nonCaptureMoves.length > 1) {
+		const uciMoves = nonCaptureMoves.map(
+			(move) => `${move.from}${move.to}${move.promotion || ""}`
+		)
 		return await getBestMoveFromList({
 			fen,
-			moves: movesToAlgebraic(chessboard.getState(), nonCaptureMoves),
+			moves: uciMoves,
 			signal
 		})
+	}
 
 	return await getBestMove(fen, 100, signal)
 }

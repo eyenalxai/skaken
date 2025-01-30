@@ -93,6 +93,11 @@ export const useChessGame = () => {
 			}
 
 			const chessMove = await executeStrategy()
+			console.log(
+				`chess move with strategy ${strategy} for color ${state.activeColor}: ${JSON.stringify(
+					chessMove
+				)}`
+			)
 			if (chessMove === null) return
 
 			const chessboardCopy = new ChessGame(chessboard.getFen())
