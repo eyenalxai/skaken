@@ -56,14 +56,13 @@ export const Chessboard = ({ gameState }: ChessboardProps) => {
 										"flex",
 										"justify-center",
 										"items-center",
-										"w-8",
-										"h-8"
+										"size-full"
 									)}
 								>
 									<Piece
+										className={cn("size-full", "p-1")}
 										color={piece[0] === "w" ? "white" : "black"}
 										piece={pieceMap[piece[1] as PieceType]}
-										width={32}
 									/>
 								</div>
 							)}
