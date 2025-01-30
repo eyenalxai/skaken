@@ -23,7 +23,7 @@ export const fetcher = ({ endpoint, method, body, signal }: FetcherProps) => {
 		})
 		.catch((error) => {
 			if (error.name === "AbortError") return null
-			toast.error(`${error}`)
+			toast.error(`Error fetching ${endpoint}: ${error}`)
 			return null
 		})
 }
