@@ -30,8 +30,7 @@ export const useChessGame = () => {
 	const restart = () => {
 		setChessboard(new ChessGame())
 		setGameOutcome(null)
-		setPlayerControls({ w: "random-move", b: "random-move" })
-		setIsPaused(false)
+		setIsPaused(true)
 	}
 
 	const togglePause = () => setIsPaused((prev) => !prev)
